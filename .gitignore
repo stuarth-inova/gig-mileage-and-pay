@@ -1,0 +1,16 @@
+# compiled
+*.com
+*.exe
+*.pyc
+*.dll
+
+# packages
+*.dmg
+*.jar
+*.tar
+*.zip
+
+# logs and dbs
+*.log
+*.sql
+*.csv
