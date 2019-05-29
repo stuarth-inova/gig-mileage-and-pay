@@ -14,3 +14,9 @@
 *.log
 *.sql
 *.csv
+*.lock
+
+# IDE files
+*/.idea
+*.xml
+*.iml

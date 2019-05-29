@@ -4,6 +4,7 @@
 Gig organizing object to handle a given year's gigs
 """
 
+
 class GigOrganizer():
 
     def __init__(self, clean_gig_list, headers):
@@ -13,9 +14,6 @@ class GigOrganizer():
 # ToDo: Output dict of form gig_dict{Date} => Each element points to one dict: keys: Pay, Venue, Band, Trip Origin, Comment
 #
 # Cycle through gigs (outer keys) and use "Venue" and "Trip Origin" keys to extract R/T Mileage, add to rolling sum; use "Pay" key to get money, add to rolling sum.
-
-
-
 
 
 def dict_from_hdrs_and_data(fillin_dict, hdr_list, data_list):

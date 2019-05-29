@@ -13,6 +13,7 @@ Gigs object that holds all of one year's gigs
         trip_origin - if empty = '2517 Commonwealth'
 """
 
+
 class Gigs:
 
     def __init__(self, gig_events_list, headers):
@@ -26,7 +27,7 @@ class Gigs:
             if gig_date not in self.gigs_dict:
                 self.gigs_dict[gig_date] = {}
                 for index in range(0, len(gig_event)):
-                    #print('Date: {}); index: {}; value: {}'.format(gig_event[2], index, gig_event[index]))
+                    # print('Date: {}); index: {}; value: {}'.format(gig_event[2], index, gig_event[index]))
                     if headers[index] == 'band':
                         new_key = 'band'
                     elif headers[index] == 'venue':
@@ -50,7 +51,7 @@ class Gigs:
                             self.gigs_dict[gig_date][new_key] = '2517 commonwealth'
                         else:
                             self.gigs_dict[gig_date][new_key] = gig_event[index]
-                        #print('trip origin value after processing: {}'.format(self.gigs_dict[gig_event[2]][new_key]))
+                        # print('trip origin value after processing: {}'.format(self.gigs_dict[gig_event[2]][new_key]))
                     elif new_key == 'date':
                         pass
                     elif new_key == 'mileage':
@@ -78,9 +79,9 @@ class Gigs:
         print('')
         
     def gig_keys(self):
-        '''
+        """
         Return a list of dates, which are the primary Gigs key
-        '''
+        """
         key_list = []
         for key in sorted(self.gigs_dict):
             key_list.append(key)
@@ -88,28 +89,28 @@ class Gigs:
         return key_list
     
     def gig_pay(self, datekey):
-        '''
+        """
         Return pay for gig date arg
-        '''
+        """
         return self.gigs_dict[datekey]['pay']
     
     def gig_venue(self, datekey):
-        '''
+        """
         Returns the Venue for gig date arg > key for mileage object
-        '''
+        """
         return self.gigs_dict[datekey]['venue']
     
     def gig_origin(self, datekey):
-        '''
+        """
         Returns gig origin for gig date arg
-        '''
+        """
         try:
             return self.gigs_dict[datekey]['trip_origin']
         except KeyError as expected_keyfault:
             return '2517 commonwealth'
     
-    #def rt_total_miles(self, venue, trip_origin='2517 commonwealth'):
-    #    if trip_origin == '2517 commonwealth':
-    #        return self.gig_dict[venue]['round_trip_commonwealth']
-    #    elif trip_origin == '741 dry bridge':
-    #        return self.gigs_dict[venue]['round_trip_dry_br']                
+    # def rt_total_miles(self, venue, trip_origin='2517 commonwealth'):
+    #     if trip_origin == '2517 commonwealth':
+    #         return self.gig_dict[venue]['round_trip_commonwealth']
+    #     elif trip_origin == '741 dry bridge':
+    #         return self.gigs_dict[venue]['round_trip_dry_br']
