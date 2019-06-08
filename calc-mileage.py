@@ -139,10 +139,10 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
     gigs_dict = {}
     dict_from_hdrs_and_data(gigs_dict, gig_hdr, gigs_list)
 
-    # Test new Gigs object
+    # Use new Gigs object
     print('Instantiating Gigs object...')
-    annual_gigs = Gigs(gigs_list, gig_hdr)
-    #annual_gigs.print_out_gig_by_gig()
+    annualGigs = Gigs(gigs_list, gig_hdr)
+    #annualGigs.print_out_gig_by_gig()
     #print('')
     #print('Should have been some printing from the gigs object...')
     #print('')
@@ -227,19 +227,19 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
     
 # ToDo: annual mileage per venue; verbose listing of unique bands and unque venues
 
-    gigs = annual_gigs.gig_keys()
+    gigs = annualGigs.gig_keys()
     miles_sum = 0.0
     pay_sum = 0.0
     for gig in gigs:
         try:
-            miles_sum += float(venue_distance.rt_miles(annual_gigs.gig_venue(gig), annual_gigs.gig_origin(gig)))
+            miles_sum += float(venue_distance.rt_miles(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
         except KeyError as bad_key:
-            print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(annual_gigs.gig_venue(gig)))
-            print('    The key error returned was: {}\n'.format(bad_key))
+            print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(annualGigs.gig_venue(gig)))
+            print('    The index of the problem is: {}\n'.format(bad_key))
 
-        pay_sum += float(annual_gigs.gig_pay(gig))
+        pay_sum += float(annualGigs.gig_pay(gig))
     
-    print('Number of gigs: {}, Miles: {}; Pay: {}'.format(len(gigs), miles_sum, pay_sum))
+    print('Number of gigs: {}, Miles: {:0.1f}; Pay: {:0.2f}'.format(len(gigs), miles_sum, pay_sum))
     print('-----------------------------------------')
 
     
