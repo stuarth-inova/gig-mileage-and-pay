@@ -99,19 +99,19 @@ class Gigs:
     
     def gig_pay(self, gigkey):
         """
-        Return pay for gig date arg
+        Return pay for gig key arg
         """
         return self.gigs_dict[gigkey]['pay']
     
     def gig_venue(self, gigkey):
         """
-        Returns the Venue for gig date arg > key for mileage object
+        Returns the Venue for gig key arg > key for mileage object
         """
         return self.gigs_dict[gigkey]['venue']
     
     def gig_origin(self, gigkey):
         """
-        Returns gig origin for gig date arg
+        Returns gig origin for gig key arg
         """
         try:
             return self.gigs_dict[gigkey]['trip_origin']

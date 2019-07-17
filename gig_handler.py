@@ -5,7 +5,7 @@ Gig organizing object to handle a given year's gigs
 """
 
 
-class GigOrganizer():
+class GigOrganizer:
 
     def __init__(self, clean_gig_list, headers):
         self.gig_dict = {}

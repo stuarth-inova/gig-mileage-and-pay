@@ -87,7 +87,7 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
         dir_path = os.path.dirname(os.path.realpath(__file__))
         args.outfile = dir_path + '/mileage_out.txt'
             
-    #print ("Gigs file: " + args.gigs_csv)
+    #print("Gigs file: " + args.gigs_csv)
     #print ("Distances file: " + args.dists_csv)
     #print ("Output file: " + args.outfile)
 
@@ -225,7 +225,7 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
     print('*** Values from the new Gigs object!! ***')
     print('-----------------------------------------')
     
-# ToDo: annual mileage per venue; verbose listing of unique bands and unque venues
+# ToDo: annual mileage per venue; verbose listing of unique bands and unique venues
 
     gigs = annualGigs.gig_keys()
     miles_sum = 0.0
@@ -239,7 +239,7 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
 
         pay_sum += float(annualGigs.gig_pay(gig))
     
-    print('Number of gigs: {}, Miles: {:0.1f}; Pay: {:0.2f}'.format(len(gigs), miles_sum, pay_sum))
+    print('For {} - Number of gigs: {}, Miles: {:0.1f}; Pay: {:0.2f}'.format(args.gigs_csv, len(gigs), miles_sum, pay_sum))
     print('-----------------------------------------')
 
     
