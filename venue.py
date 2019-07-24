@@ -4,6 +4,7 @@
 Venue object interrogated by a gig for mileage
 """
 
+
 class VenueMileage:
 
     def __init__(self, clean_venue_mileage, headers):
@@ -37,5 +38,3 @@ class VenueMileage:
             return self.venue_dict[venue]['round_trip_commonwealth']
         elif trip_origin == '741 dry bridge':
             return self.venue_dict[venue]['round_trip_dry_br']
-
-        

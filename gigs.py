@@ -117,7 +117,26 @@ class Gigs:
             return self.gigs_dict[gigkey]['trip_origin']
         except KeyError as expected_keyfault:
             return '2517 commonwealth'
-    
+
+    def list_of_venues_and_origins(self):
+        """
+        Provide a list of venues, in key order, and the origin of the trip for each of those gigs
+        :return: list of tuples; ea tuple is (<venue>, <origin>)
+        """
+        ordered_venue_origin_list = []
+        for key in sorted(self.gigs_dict):
+            try:
+                ordered_venue_origin_list.append((self.gigs_dict[key]['venue'], self.gigs_dict[key]['trip_origin']))
+            except KeyError as key_error:
+                if key_error.args[0] == 'trip_origin':
+                    ordered_venue_origin_list.append((self.gigs_dict[key]['venue'], '2517 commonwealth'))
+                else:
+                    print('Unexpected key error: {}'.format(key_error))
+                    print('Re-throwing error')
+                    raise key_error
+
+        return ordered_venue_origin_list
+
     # def rt_total_miles(self, venue, trip_origin='2517 commonwealth'):
     #     if trip_origin == '2517 commonwealth':
     #         return self.gig_dict[venue]['round_trip_commonwealth']

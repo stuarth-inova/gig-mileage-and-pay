@@ -10,7 +10,7 @@ from datetime import date
 
 
 def read_raw_csv_file(csv_file):
-    '''Read in csv file line by line'''
+    """Read in csv file line by line"""
     input_list = []
     try:
         with open(csv_file, 'r') as f:
@@ -26,7 +26,7 @@ def read_raw_csv_file(csv_file):
 
 
 def remove_blank_elements(parsed_csv_file):
-    '''remove records from CSV input where all elements are empty'''
+    """remove records from CSV input where all elements are empty"""
     new_list = []
     for line in parsed_csv_file:
         has_data = False
@@ -39,8 +39,8 @@ def remove_blank_elements(parsed_csv_file):
                 
 
 def print_output_dict(out_file, out_dict):
-    '''Prints our special dictionary to specified output file, where keys are topics, and
-    values are lists of subscribers to that topic, with sorted keys (sorted topics)'''
+    """Prints our special dictionary to specified output file, where keys are topics, and
+    values are lists of subscribers to that topic, with sorted keys (sorted topics)"""
 
     try:
         with open(out_file, "w") as sort_out:
@@ -51,6 +51,7 @@ def print_output_dict(out_file, out_dict):
                     sort_out.write(line)
     except IOError as err:
         print('Problem opening/writing to output file ' + str(out_file) + '. Gave error: ' + str(err))
+
 
 def dict_from_hdrs_and_data(fillin_dict, hdr_list, data_list):
     for ind, header in enumerate(hdr_list):
@@ -65,12 +66,13 @@ def dict_from_hdrs_and_data(fillin_dict, hdr_list, data_list):
     except KeyError:
         pass
 
+
 def main(argv):
     parser = argparse.ArgumentParser(
         formatter_class = argparse.RawDescriptionHelpFormatter,
         description = 'Caluclates annual gig mileage from two .csv files: one of gigs, the other of mileage to each gig.',
-        epilog = '''Example usage:
-python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.csv -o output_mileage.txt''')
+        epilog = """Example usage:
+python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.csv -o output_mileage.txt""")
     parser.add_argument("-g", "--gigs_file", action = "store", dest = "gigs_csv", required = True,
                         help = "CSV format file of gigs for a period of time - 1 year for taxes")
     parser.add_argument("-m", "--distances_file", action = "store", dest = "dists_csv", required = True,
@@ -114,14 +116,14 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
 #    print(dist_hdr)
 #    print('')
     
-    '''Gigs has the 'schema' as follows:
+    """Gigs has the 'schema' as follows:
         Band - index 0
         Venue - index 1
         Date - index 2
         Pay in $ - index 3
         Round Trip Mileage - index 4 (optional - no longer used)
         Trip Origin - index 5 - only valid choices are "2517 commonwealth" or "741 dry bridge" - no arg given, uses 2517 commonwealth r/t mileage.
-    '''
+    """
 
     # Handle some text label modifications
     for gig in gigs_list:
@@ -227,6 +229,13 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
     
 # ToDo: annual mileage per venue; verbose listing of unique bands and unique venues
 
+    # Section computes mileage per venue
+    list_of_venues_and_origins = annualGigs.list_of_venues_and_origins()
+    for venue, origin in list_of_venues_and_origins:
+        print(venue, origin)
+    print('')
+
+    # Section computes total mileage and pay
     gigs = annualGigs.gig_keys()
     miles_sum = 0.0
     pay_sum = 0.0
@@ -242,7 +251,7 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
     print('For {} - Number of gigs: {}, Miles: {:0.1f}; Pay: {:0.2f}'.format(args.gigs_csv, len(gigs), miles_sum, pay_sum))
     print('-----------------------------------------')
 
-    
+
 if __name__ == '__main__':
     main(sys.argv[1:])
 
