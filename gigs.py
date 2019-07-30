@@ -78,13 +78,23 @@ class Gigs:
             print('On {} at {}:'.format(self.gigs_dict[key]['date'], self.gigs_dict[key]['venue']))
             try:
                 print('    pay: {}; band: {}; origin: {}'.format(self.gigs_dict[key]['pay'], self.gigs_dict[key]['band'], self.gigs_dict[key]['trip_origin']))
-            except KeyError as expected_error:
-                print('    pay: {}; band: {}; origin: {}'.format(self.gigs_dict[key]['pay'], self.gigs_dict[key]['band'], '2517 commonwealth'))
+            except KeyError as key_error:
+                if key_error.args[0] == 'trip_origin':
+                    print('    pay: {}; band: {}; origin: {}'.format(self.gigs_dict[key]['pay'], self.gigs_dict[key]['band'], '2517 commonwealth'))
+                else:
+                    print('Unexpected key error: {}'.format(key_error))
+                    print('Re-throwing error')
+                    raise key_error
             try:
                 if self.gigs_dict[key]['comment']:
                     print('    comment if any: {}'.format(self.gigs_dict[key]['comment']))
-            except KeyError as no_comment_err:
-                pass
+            except KeyError as key_error:
+                if key_error.args[0] == 'comment':
+                    pass
+                else:
+                    print('Unexpected key error: {}'.format(key_error))
+                    print('Re-throwing error')
+                    raise key_error
         print('')
         
     def gig_keys(self):
