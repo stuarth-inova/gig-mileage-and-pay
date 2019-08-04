@@ -231,9 +231,31 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
 
     # Section computes mileage per venue
     list_of_venues_and_origins = annualGigs.list_of_venues_and_origins()
+    by_venue_tracking_dict = {}
     for venue, origin in list_of_venues_and_origins:
-        print(venue, origin)
-    print('')
+        # print(venue, origin)
+        try:
+            rt_miles = float(venue_distance.rt_miles(venue, origin))
+        except KeyError as keyError:
+            # print('Mileage not tracked for venue {}'.format(venue))
+            pass
+        else:
+            if venue in by_venue_tracking_dict.keys():
+                by_venue_tracking_dict[venue] += rt_miles
+            else:
+                by_venue_tracking_dict.update({venue: rt_miles})
+            # print('Cumulative distance for {} is {:0.1f} miles r/t'.format(venue, by_venue_tracking_dict[venue]))
+
+    # print('')
+    max_venue_name_length = 0
+    for venue in by_venue_tracking_dict:
+        max_venue_name_length = max(max_venue_name_length, len(venue))
+
+    venue_col_format_width = max_venue_name_length + 3
+
+    for venue in by_venue_tracking_dict:
+        print('Venue: {: <20}  - Cumulative r/t mileage: {:0.1f}'.format(venue, by_venue_tracking_dict[venue]))
+
 
     # Section computes total mileage and pay
     gigs = annualGigs.gig_keys()
