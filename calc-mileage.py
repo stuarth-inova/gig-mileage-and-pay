@@ -227,7 +227,7 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
     print('*** Values from the new Gigs object!! ***')
     print('-----------------------------------------')
     
-# ToDo: annual mileage per venue; verbose listing of unique bands and unique venues
+# ToDo: verbose listing of unique bands and unique venues
 
     # Section computes mileage per venue
     list_of_venues_and_origins = annualGigs.list_of_venues_and_origins()
@@ -246,12 +246,8 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
                 by_venue_tracking_dict.update({venue: rt_miles})
             # print('Cumulative distance for {} is {:0.1f} miles r/t'.format(venue, by_venue_tracking_dict[venue]))
 
-    # print('')
-    max_venue_name_length = 0
-    for venue in by_venue_tracking_dict:
-        max_venue_name_length = max(max_venue_name_length, len(venue))
-
-    venue_col_format_width = max_venue_name_length + 3
+    # Unique list of bands and venues for the year - make use of 'uniquified' venues from per venue mileage
+    # if args.verbose:
 
     for venue in by_venue_tracking_dict:
         print('Venue: {: <20}  - Cumulative r/t mileage: {:0.1f}'.format(venue, by_venue_tracking_dict[venue]))
