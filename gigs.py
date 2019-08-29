@@ -147,6 +147,28 @@ class Gigs:
 
         return ordered_venue_origin_list
 
+    def unique_band_list(self):
+        """
+        Provide a uniques list of bands for the year in question - a set of bands
+        :return: list of bands with no duplicates
+        """
+        non_unique_list = []
+        for key in sorted(self.gigs_dict):
+            non_unique_list.append(self.gigs_dict[key]['band'])
+
+        return set(non_unique_list)
+
+    def unique_venue_list(self):
+        """
+        Provide a uniques list of venues for the year in question - a set of bands
+        :return: list of venues with no duplicates
+        """
+        non_unique_list = []
+        for key in sorted(self.gigs_dict):
+            non_unique_list.append(self.gigs_dict[key]['venue'])
+
+        return set(non_unique_list)
+
     # def rt_total_miles(self, venue, trip_origin='2517 commonwealth'):
     #     if trip_origin == '2517 commonwealth':
     #         return self.gig_dict[venue]['round_trip_commonwealth']
