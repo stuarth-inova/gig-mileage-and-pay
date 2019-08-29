@@ -4,8 +4,9 @@ from datetime import date
 
 """
 Gigs object that holds all of one year's gigs
-    Main key is dates of gig event
+    Main key is integer index ID of gig event
     Secondary key in each gig even't dict:
+        date
         venue
         pay
         band
@@ -20,11 +21,10 @@ class Gigs:
         self.gigs_dict = {}
         gig_index = 0
         for gig_event in gig_events_list:
-            #gig_key = str(gig_index)
             gig_date_list = gig_event[2].split('/')
             gig_day = int(gig_date_list[1])
             gig_month = int(gig_date_list[0])
-            gig_year = int(gig_date_list[2]) + 2000
+            gig_year = int(gig_date_list[2]) + 2000    # Quite hard-coded for my data...
             gig_date = date(gig_year, gig_month, gig_day)
             if gig_index not in self.gigs_dict:
                 self.gigs_dict[gig_index] = {}
@@ -47,7 +47,7 @@ class Gigs:
                     else:
                         new_key = headers[index]
                         
-                    # Handle empty trip_origin here - but first try to handle on output method
+                    # Handle empty trip_origin here
                     if new_key == 'trip_origin':
                         if not gig_event[index]:
                             self.gigs_dict[gig_index][new_key] = '2517 commonwealth'
@@ -56,6 +56,7 @@ class Gigs:
                         # print('trip origin value after processing: {}'.format(self.gigs_dict[gig_event[2]][new_key]))
                     elif new_key == 'date':
                         self.gigs_dict[gig_index][new_key] = gig_date
+                    # Not using the included mileage data from older gigs.csv files, so just pass this by.
                     elif new_key == 'mileage':
                         pass
                     else:
@@ -67,7 +68,7 @@ class Gigs:
                 print('  ---> {}'.format(gig_index))
                 print('******')
             
-            gig_index = gig_index + 1
+            gig_index += 1
               
     def print_out_gig_by_gig(self):
         print('')

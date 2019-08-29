@@ -172,13 +172,16 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
         except KeyError as bad_key:
             if args.verbose:
                 print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(annualGigs.gig_venue(gig)))
-                print('    The index of the problem is: {}\n'.format(bad_key))
+                print('    The index of the problem is: {}'.format(bad_key))
             else:
                 pass
 
         pay_sum += float(annualGigs.gig_pay(gig))
-    
-    print('\nFor {} - Number of gigs: {}, Miles: {:0.1f}; Pay: {:0.2f}'.format(args.gigs_csv, len(gigs), miles_sum, pay_sum))
+
+    if args.verbose:
+        print('\n<<< Totals >>>')
+        print('-----------------------------------------')
+    print('For {}: {} gigs; {:0.1f} miles; ${:0.2f} pay'.format(args.gigs_csv, len(gigs), miles_sum, pay_sum))
     print('-----------------------------------------')
 
 
