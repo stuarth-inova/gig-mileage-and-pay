@@ -1,26 +1,26 @@
-from flask import Flask
+from flask import Flask, escape, url_for, render_template
 app = Flask(__name__)
 
 
-@app.route("/")
+@app.route('/')
 def index():
-    return "Index!"
+    return render_template('index.html')
 
 
-@app.route("/hello")
+@app.route('/hello')
 def hello():
-    return "Hello World!"
+    return render_template
 
 
-@app.route("/members")
+@app.route('/members')
 def members():
     return "Members"
 
 
-# @app.route("/members/<string:name>")
-# def getMember(name):
-#     return name</string:name>
+@app.route('/members/<path:username>')
+def get_member(username):
+    return "Member: {}".format(escape(username))
 
 
 if __name__ == "__main__":
-    app.run()
+    app.run(host='0.0.0.0', port=80)

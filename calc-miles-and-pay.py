@@ -83,13 +83,13 @@ def main(argv):
         description = 'Caluclates annual gig mileage from two .csv files: one of gigs, the other of mileage to each gig.',
         epilog = """Example usage:
 python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.csv -o output_mileage.txt""")
-    parser.add_argument("-g", "--gigs_file", action = "store", dest = "gigs_csv", required = True,
+    parser.add_argument("-g", "--gigs_file", action="store", dest="gigs_csv", required=True,
                         help = "CSV format file of gigs for a period of time - 1 year for taxes")
-    parser.add_argument("-m", "--distances_file", action = "store", dest = "dists_csv", required = True,
+    parser.add_argument("-m", "--distances_file", action="store", dest="dists_csv", required=True,
                         help = "CSV format file of distances to gig locations")
-    parser.add_argument("-o", "--output_file", action = "store", dest = "outfile", required = False,
+    parser.add_argument("-o", "--output_file", action="store", dest="outfile", required=False,
                         help = "Output file name, can include path or will output locally")
-    parser.add_argument("-v", "--verbose", action = "store_true", dest = "verbose", required = False,
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", required=False,
                         help = "Provide additional output and computations")
     
     args = parser.parse_args()
