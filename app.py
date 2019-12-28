@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 from flask import Flask, escape, url_for, render_template
 app = Flask(__name__)
 
@@ -8,18 +10,19 @@ def index():
 
 
 @app.route('/hello')
-def hello():
-    return render_template
+@app.route('/hello/<name>')
+@app.route('/hello/<name>/')
+def hello(name=None):
+    return render_template('hello.html', name=name)
 
 
 @app.route('/members')
-def members():
-    return "Members"
-
-
 @app.route('/members/<path:username>')
-def get_member(username):
-    return "Member: {}".format(escape(username))
+def members(username=None):
+    if username:
+        print("triggered strip")
+        username = username.strip("/")
+    return render_template('members.html', username=username)
 
 
 if __name__ == "__main__":

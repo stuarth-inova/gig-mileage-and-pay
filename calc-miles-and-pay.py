@@ -37,22 +37,6 @@ def remove_blank_elements(parsed_csv_file):
     return new_list
                 
 
-# ToDo: actually implement this using the new plumbing - should be easy?
-def print_output_dict(out_file, out_dict):
-    """Prints our special dictionary to specified output file, where keys are topics, and
-    values are lists of subscribers to that topic, with sorted keys (sorted topics)"""
-
-    try:
-        with open(out_file, "w") as sort_out:
-            # This sorts the dictionary keys (topics) while outputting the topics and subs
-            for key in sorted(out_dict):
-                sort_out.write(key)
-                for line in out_dict[key]:
-                    sort_out.write(line)
-    except IOError as err:
-        print('Problem opening/writing to output file ' + str(out_file) + '. Gave error: ' + str(err))
-
-
 def mileage_per_venue(gigs_object, distances):
     """
     Computes mileage per venue
@@ -75,6 +59,30 @@ def mileage_per_venue(gigs_object, distances):
             # print('Cumulative distance for {} is {:0.1f} miles r/t'.format(venue, by_venue_tracking_dict[venue]))
 
     return by_venue_tracking_dict
+
+
+def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_flag):
+    """
+    Section computes total mileage and pay
+    :return: miles_sum, pay_sum, num_gigs, gig_filename
+    """
+    curr_gigs = annualGigs.gig_keys()
+    miles_sum = 0.0
+    pay_sum = 0.0
+    for gig in curr_gigs:
+        try:
+            miles_sum += float(venue_distance.rt_miles(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
+        except KeyError as bad_key:
+            if verbose_flag:
+                print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(annualGigs.gig_venue(gig)))
+                print('    The index of the problem is: {}'.format(bad_key))
+            else:
+                pass
+
+        pay_sum += float(annualGigs.gig_pay(gig))
+        num_gigs = len(curr_gigs)
+
+    return miles_sum, pay_sum, num_gigs, gig_filename
 
 
 def main(argv):
@@ -104,8 +112,8 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
     #print ("Output file: " + args.outfile)
 
     # Read in csv files
-    raw_gigs_list=read_raw_csv_file(args.gigs_csv)
-    raw_dists=read_raw_csv_file(args.dists_csv)
+    raw_gigs_list = read_raw_csv_file(args.gigs_csv)
+    raw_dists = read_raw_csv_file(args.dists_csv)
 
     distances = remove_blank_elements(raw_dists)
     gigs_list = remove_blank_elements(raw_gigs_list)
@@ -148,12 +156,11 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
 
         print('Unique set of bands from {} is:'.format(args.gigs_csv))
         for band in unique_band_list:
-            print('{}'.format(band))
+            print('     {}'.format(band))
 
-        # ToDo: Combine this list of unique venues with the per venue mileage list w/ unmatched venues as 'unmatched'
         print('\nUnique set of venues from {} is:'.format(args.gigs_csv))
         for venue in unique_venue_list:
-            print('{}'.format(venue))
+            print('     {}'.format(venue))
         print('')
 
         miles_per_venue_dict = mileage_per_venue(annualGigs, venue_distance)
@@ -162,26 +169,14 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
         for venue in miles_per_venue_dict:
             print('Venue: {: <20}  - Cumulative r/t mileage: {:0.1f}'.format(venue, miles_per_venue_dict[venue]))
 
-    # Section computes total mileage and pay
-    gigs = annualGigs.gig_keys()
-    miles_sum = 0.0
-    pay_sum = 0.0
-    for gig in gigs:
-        try:
-            miles_sum += float(venue_distance.rt_miles(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
-        except KeyError as bad_key:
-            if args.verbose:
-                print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(annualGigs.gig_venue(gig)))
-                print('    The index of the problem is: {}'.format(bad_key))
-            else:
-                pass
-
-        pay_sum += float(annualGigs.gig_pay(gig))
+    # Use function for annual gig summary stats, this will make calling it for Flask output easier
+    miles_sum, pay_sum, num_gigs, gig_data_file = gig_pay_distance_summary(args.gigs_csv, annualGigs, venue_distance,
+                                                                           args.verbose)
 
     if args.verbose:
         print('\n<<< Totals >>>')
         print('-----------------------------------------')
-    print('For {}: {} gigs; {:0.1f} miles; ${:0.2f} pay'.format(args.gigs_csv, len(gigs), miles_sum, pay_sum))
+    print('For {}: {} gigs; {:0.1f} miles; ${:0.2f} pay'.format(gig_data_file, num_gigs, miles_sum, pay_sum))
     print('-----------------------------------------')
 
 
