@@ -70,6 +70,7 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
     curr_gigs = annualGigs.gig_keys()
     miles_sum = 0.0
     pay_sum = 0.0
+    unmatched_venues = []
     for gig in curr_gigs:
         try:
             miles_sum += float(venue_distance.rt_miles(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
@@ -77,13 +78,14 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
             if verbose_flag:
                 print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(annualGigs.gig_venue(gig)))
                 print('    The index of the problem is: {}'.format(bad_key))
+                unmatched_venues.append(annualGigs.gig_venue(gig))
             else:
                 pass
 
         pay_sum += float(annualGigs.gig_pay(gig))
         num_gigs = len(curr_gigs)
 
-    return miles_sum, pay_sum, num_gigs, gig_filename
+    return miles_sum, pay_sum, num_gigs, gig_filename, unmatched_venues
 
 
 def process_gig_input_csv(raw_input_file):
@@ -182,8 +184,10 @@ python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.
             print('Venue: {: <20}  - Cumulative r/t mileage: {:0.1f}'.format(venue, miles_per_venue_dict[venue]))
 
     # Use function for annual gig summary stats, this will make calling it for Flask output easier
-    miles_sum, pay_sum, num_gigs, gig_data_file = gig_pay_distance_summary(args.gigs_csv, annualGigs, venue_distance,
-                                                                           args.verbose)
+    miles_sum, pay_sum, num_gigs, gig_data_file, venues_not_matched = gig_pay_distance_summary(args.gigs_csv,
+                                                                                               annualGigs,
+                                                                                               venue_distance,
+                                                                                               args.verbose)
 
     if args.verbose:
         print('\n<<< Totals >>>')

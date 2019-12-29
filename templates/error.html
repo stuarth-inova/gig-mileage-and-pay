@@ -6,6 +6,10 @@
 </head>
 <body>
 <h1>An error occurred:</h1>
-<h3>Problem opening or reading input CSV file {{ input_file }}. Gave exception: {{ exception }}</h3>
+{% if input_file %}
+    <h3>Problem opening or reading input CSV file {{ input_file }}. Gave exception: {{ exception }}</h3>
+{% else %}
+    <h3>General error description: {{ exception }}</h3>
+{% endif %}
 </body>
 </html>

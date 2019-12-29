@@ -38,6 +38,12 @@ def gigs():
 
 
 @app.route('/summary')
+def no_input_gigs_error():
+    env_err = 'Please append GIGS data CSV file in path after ' \
+              'summary. E.g. "http://my_url:my_port/summary/gigs_2019.csv"'
+    return render_template('error.html', exception=env_err)
+
+
 @app.route('/summary/<input_gigs>')
 @app.route('/summary/<input_gigs>/<verbose_flag>')
 def summary(input_gigs, verbose_flag=None):
@@ -55,10 +61,11 @@ def summary(input_gigs, verbose_flag=None):
 
     venue_distance = calc_miles_and_pay.process_distances_input_csv(input_distances)
 
-    miles_sum, pay_sum, num_gigs, gig_data_file = calc_miles_and_pay.gig_pay_distance_summary(input_gigs,
-                                                                            annualGigs, venue_distance, verbose)
+    miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = calc_miles_and_pay.gig_pay_distance_summary(
+        input_gigs,annualGigs, venue_distance, verbose)
 
-    return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file)
+    return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
+                           unmatched_venue_list=venues_unmatched)
 
 
 if __name__ == "__main__":
