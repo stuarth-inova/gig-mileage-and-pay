@@ -21,7 +21,8 @@ def read_raw_csv_file(csv_file):
             return input_list
     except EnvironmentError as err:
         print('Problem opening or reading input csv file {}. Gave error: {} \n'.format(csv_file, err))
-        sys.exit()
+        #sys.exit()
+        raise
 
 
 def remove_blank_elements(parsed_csv_file):
@@ -35,7 +36,7 @@ def remove_blank_elements(parsed_csv_file):
         if has_data:
             new_list.append(line)
     return new_list
-                
+
 
 def mileage_per_venue(gigs_object, distances):
     """
@@ -63,7 +64,7 @@ def mileage_per_venue(gigs_object, distances):
 
 def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_flag):
     """
-    Section computes total mileage and pay
+    Section computes total mileage, pay, number of gigs, and also returns raw input file
     :return: miles_sum, pay_sum, num_gigs, gig_filename
     """
     curr_gigs = annualGigs.gig_keys()
@@ -85,50 +86,20 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
     return miles_sum, pay_sum, num_gigs, gig_filename
 
 
-def main(argv):
-    parser = argparse.ArgumentParser(
-        formatter_class = argparse.RawDescriptionHelpFormatter,
-        description = 'Caluclates annual gig mileage from two .csv files: one of gigs, the other of mileage to each gig.',
-        epilog = """Example usage:
-python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.csv -o output_mileage.txt""")
-    parser.add_argument("-g", "--gigs_file", action="store", dest="gigs_csv", required=True,
-                        help = "CSV format file of gigs for a period of time - 1 year for taxes")
-    parser.add_argument("-m", "--distances_file", action="store", dest="dists_csv", required=True,
-                        help = "CSV format file of distances to gig locations")
-    parser.add_argument("-o", "--output_file", action="store", dest="outfile", required=False,
-                        help = "Output file name, can include path or will output locally")
-    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", required=False,
-                        help = "Provide additional output and computations")
-    
-    args = parser.parse_args()
-
-    # Create value for outfile if none passed in - this needs more help to handle paths arbitrarily
-    if not args.outfile:
-        dir_path = os.path.dirname(os.path.realpath(__file__))
-        args.outfile = dir_path + '/mileage_out.txt'
-            
-    #print("Gigs file: " + args.gigs_csv)
-    #print ("Distances file: " + args.dists_csv)
-    #print ("Output file: " + args.outfile)
-
-    # Read in csv files
-    raw_gigs_list = read_raw_csv_file(args.gigs_csv)
-    raw_dists = read_raw_csv_file(args.dists_csv)
-
-    distances = remove_blank_elements(raw_dists)
+def process_gig_input_csv(raw_input_file):
+    """
+    Take raw 'gigs' input CSV file and returns populated gig object
+    :param raw_input_file: CSV of gigs, pay, and origin
+    :return: Populated 'Gigs' object
+    """
+    raw_gigs_list = read_raw_csv_file(raw_input_file)
     gigs_list = remove_blank_elements(raw_gigs_list)
-    
-    #for line in gigs_list:
+
+    # for line in gigs_list:
     #    print('{}'.format(line))
 
-    # First row in ea file is a header, save them for later    
     gig_hdr = gigs_list.pop(0)
-    dist_hdr = distances.pop(0)
 
-    # Create venue-distances object
-    venue_distance = VenueMileage(distances, dist_hdr)
-#    venue_distance.print_out_mileage_list()
-    
     # Handle some text label modifications ToDo: add fuzzy name matching module for venues
     for gig in gigs_list:
         gig[1] = gig[1].replace('Millers'.lower(), "Miller's".lower())
@@ -141,9 +112,50 @@ python calc-mileage.py -g file_o_gigs.csv -m file_o_roundtrip_distance_to_gigs.c
         gig[1] = gig[1].replace("Shebeen Cullen's grad pty".lower(), 'the shebeen')
 
     # Use new Gigs object
-    annualGigs = Gigs(gigs_list, gig_hdr)
+    gigs_object = Gigs(gigs_list, gig_hdr)
     # annualGigs.print_out_gig_by_gig()
     # print('')
+
+    return gigs_object
+
+
+def process_distances_input_csv(raw_distances_file):
+    """
+    Take raw 'distances' input CSV and returns populated VenueMileage object
+    :param raw_distances_file: CSV of venues and round-trip distances
+    :return: Populated "VenueMileage" object
+    """
+    raw_dists = read_raw_csv_file(raw_distances_file)
+    distances = remove_blank_elements(raw_dists)
+
+    dist_hdr = distances.pop(0)
+
+    # Create venue-distances object
+    venues_object = VenueMileage(distances, dist_hdr)
+
+    # venues_object.print_out_mileage_list()
+
+    return venues_object
+
+
+def main(argv):
+    parser = argparse.ArgumentParser(
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        description='Caluclates annual gig mileage from two .csv files: one of gigs, the other of mileage to each gig.',
+        epilog="""Example usage:
+python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.csv""")
+    parser.add_argument("-g", "--gigs_file", action="store", dest="gigs_csv", required=True,
+                        help="CSV format file of gigs for a period of time - 1 year for taxes")
+    parser.add_argument("-m", "--distances_file", action="store", dest="dists_csv", required=True,
+                        help="CSV format file of distances to gig locations")
+    parser.add_argument("-v", "--verbose", action="store_true", dest="verbose", required=False,
+                        help="Provide additional output and computations")
+    
+    args = parser.parse_args()
+
+    # Use raw CSV files' data to populate to instantiate both main classes
+    annualGigs = process_gig_input_csv(args.gigs_csv)
+    venue_distance = process_distances_input_csv(args.dists_csv)
 
 # Get numbers out of the new approach - now the only approach
     print('')
