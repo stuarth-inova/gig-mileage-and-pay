@@ -37,6 +37,7 @@ def gigs():
     return render_template('gigs.html')
 
 
+@app.route('/summary')
 @app.route('/summary/<input_gigs>')
 @app.route('/summary/<input_gigs>/<verbose_flag>')
 def summary(input_gigs, verbose_flag=None):
@@ -59,5 +60,6 @@ def summary(input_gigs, verbose_flag=None):
 
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file)
 
+
 if __name__ == "__main__":
-    app.run(host='0.0.0.0', port=80)
+    app.run()
