@@ -1,0 +1,8 @@
+h1.header-image {
+  width: 350px;
+  height: 65px;
+  background-image: url(gig_calc_header.png);
+}
+h1.header-image span {
+  display: none;
+}

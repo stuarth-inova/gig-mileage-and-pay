@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+  <head>
+    {% block head %}
+    <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
+    <title>{% block title %}{% endblock %}</title>
+    <img>href="{{ url_for('static', filename='gig_calc_header.png') }}"</img>
+    <h1 id="header-image">
+      <span>Some-Tricks</span>
+    </h1>
+    {% endblock %}
+  </head>
+  <body>
+    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="footer">
+      {% block footer %}
+      YOLO, JK, BRB, LOL - Jesus
+      {% endblock %}
+    </div>
+  </body>
+</html>
