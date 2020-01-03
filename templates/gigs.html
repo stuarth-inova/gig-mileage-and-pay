@@ -1,13 +1,9 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Gigs</title>
-</head>
-<body>
-
+{% extends "layout2.html" %}
+{% block title %}Gigs{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
 <h1>Gigs</h1>
 <p>Nothing here now, but eventually a list of all gigs for the year in question</p>
-
-</body>
-</html>
+{% endblock %}

@@ -4,10 +4,7 @@
     {% block head %}
     <link rel="stylesheet" href="{{ url_for('static', filename='style2.css') }}">
     <title>{% block title %}{% endblock %}</title>
-    <img>href="{{ url_for('static', filename='gig_calc_header.png') }}"</img>
-    <h1 id="header-image">
-      <span>Some-Tricks</span>
-    </h1>
+    <img src="{{ url_for('static', filename='gig_calc_header.png') }}" alt="GigComp" class="center"/img>
     {% endblock %}
   </head>
   <body>
