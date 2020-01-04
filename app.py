@@ -56,13 +56,13 @@ def summary(input_gigs, verbose_flag=None):
 
     try:
         annualGigs = calc_miles_and_pay.process_gig_input_csv(input_gigs)
-    except EnvironmentError as env_err:
+    except EnvironmentError as env_err:    # Almost certainly File Not Found
         return render_template('error.html', input_file=input_gigs, exception=env_err)
 
     venue_distance = calc_miles_and_pay.process_distances_input_csv(input_distances)
 
     miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = calc_miles_and_pay.gig_pay_distance_summary(
-        input_gigs,annualGigs, venue_distance, verbose)
+        input_gigs, annualGigs, venue_distance, verbose)
 
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
                            unmatched_venue_list=venues_unmatched)

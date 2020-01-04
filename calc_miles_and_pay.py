@@ -165,15 +165,12 @@ python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.
     print('-----------------------------------------')
     # Unique list of bands and venues for the year
     if args.verbose:
-        unique_band_list = annualGigs.unique_band_list()
-        unique_venue_list = annualGigs.unique_venue_list()
-
         print('Unique set of bands from {} is:'.format(args.gigs_csv))
-        for band in unique_band_list:
+        for band in annualGigs.unique_band_list():
             print('     {}'.format(band))
 
         print('\nUnique set of venues from {} is:'.format(args.gigs_csv))
-        for venue in unique_venue_list:
+        for venue in annualGigs.unique_venue_list():
             print('     {}'.format(venue))
         print('')
 
