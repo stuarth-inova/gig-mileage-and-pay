@@ -5,9 +5,9 @@
 {% endblock %}
 {% block content %}
 <h1>*** Gigs from {{ data_file }} ***</h1>
-<p>-----------------------------------------</p>
+<p>-------------------------------------------------</p>
 <h3>For {{ num_gigs }} gigs: {{ "%0.1f"|format(miles) }} miles; ${{ "%0.2f"|format(pay) }} pay</h3>
-<p>-----------------------------------------</p>
+<p>-------------------------------------------------</p>
 {% if unmatched_venue_list %}
     <h4>Unmatched venues; mileage not included in mileage total.</h4>
     <ul>
