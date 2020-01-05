@@ -9,6 +9,11 @@ h3 {
   font-family: arial;
   font-size: 180%;
 }
+h4, ul {
+  color: DarkBlue;
+  font-family: helvetica;
+  font-size: 120%;
+}
 p  {
   color: DarkKhaki;
   font-family: courier;

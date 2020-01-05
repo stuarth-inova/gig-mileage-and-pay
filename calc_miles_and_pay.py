@@ -41,7 +41,7 @@ def remove_blank_elements(parsed_csv_file):
 def mileage_per_venue(gigs_object, distances):
     """
     Computes mileage per venue
-    :return: dictionary where keys are unique venue list and values are total mileage for that venue
+    :return: list of formatted text for each unique venue and the total mileage for that venue
     """
     list_of_venues_and_origins = gigs_object.list_of_venues_and_origins()
     by_venue_tracking_dict = {}
@@ -51,7 +51,8 @@ def mileage_per_venue(gigs_object, distances):
             rt_miles = float(distances.rt_miles(venue, origin))
         except KeyError as key_error:
             # print('Mileage not tracked for venue {}'.format(venue))
-            pass
+            if venue not in by_venue_tracking_dict.keys():
+                by_venue_tracking_dict.update({venue: 'Not matched for mileage'})
         else:
             if venue in by_venue_tracking_dict.keys():
                 by_venue_tracking_dict[venue] += rt_miles
@@ -59,7 +60,15 @@ def mileage_per_venue(gigs_object, distances):
                 by_venue_tracking_dict.update({venue: rt_miles})
             # print('Cumulative distance for {} is {:0.1f} miles r/t'.format(venue, by_venue_tracking_dict[venue]))
 
-    return by_venue_tracking_dict
+    miles_per_venue_list = []
+    for venue in by_venue_tracking_dict:
+        if by_venue_tracking_dict[venue] == 'Not matched for mileage':
+            miles_per_venue_list.append('Venue: {: <20}  - Not matched for mileage'.format(venue))
+        else:
+            miles_per_venue_list.append('Venue: {: <20}  - Cumulative r/t mileage: {:0.1f}'.
+                                        format(venue, by_venue_tracking_dict[venue]))
+
+    return miles_per_venue_list
 
 
 def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_flag):
@@ -76,8 +85,6 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
             miles_sum += float(venue_distance.rt_miles(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
         except KeyError as bad_key:
             if verbose_flag:
-                print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(annualGigs.gig_venue(gig)))
-                print('    The index of the problem is: {}'.format(bad_key))
                 unmatched_venues.append(annualGigs.gig_venue(gig))
             else:
                 pass
@@ -168,17 +175,13 @@ python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.
         print('Unique set of bands from {} is:'.format(args.gigs_csv))
         for band in annualGigs.unique_band_list():
             print('     {}'.format(band))
-
-        print('\nUnique set of venues from {} is:'.format(args.gigs_csv))
-        for venue in annualGigs.unique_venue_list():
-            print('     {}'.format(venue))
         print('')
 
-        miles_per_venue_dict = mileage_per_venue(annualGigs, venue_distance)
+        miles_per_venue_list = mileage_per_venue(annualGigs, venue_distance)
         print('Cumulative mileage per gig that matched the distance list')
         print('---------------------------------------------------------')
-        for venue in miles_per_venue_dict:
-            print('Venue: {: <20}  - Cumulative r/t mileage: {:0.1f}'.format(venue, miles_per_venue_dict[venue]))
+        for line in miles_per_venue_list:
+            print(line)
 
     # Use function for annual gig summary stats, this will make calling it for Flask output easier
     miles_sum, pay_sum, num_gigs, gig_data_file, venues_not_matched = gig_pay_distance_summary(args.gigs_csv,
@@ -191,6 +194,13 @@ python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.
         print('-----------------------------------------')
     print('For {}: {} gigs; {:0.1f} miles; ${:0.2f} pay'.format(gig_data_file, num_gigs, miles_sum, pay_sum))
     print('-----------------------------------------')
+
+    if args.verbose and venues_not_matched:
+        for venue in venues_not_matched:
+            print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(venue))
+
+    print('\n          ** > -  Thank you for using the command line version of calc_miles_and_pay  - < **')
+    print('\n')
 
 
 if __name__ == '__main__':

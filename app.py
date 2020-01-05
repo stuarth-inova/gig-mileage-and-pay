@@ -64,8 +64,16 @@ def summary(input_gigs, verbose_flag=None):
     miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = calc_miles_and_pay.gig_pay_distance_summary(
         input_gigs, annualGigs, venue_distance, verbose)
 
+    if verbose:
+        unique_band_list = annualGigs.unique_band_list()
+        miles_per_venue_list = calc_miles_and_pay.mileage_per_venue(annualGigs, venue_distance)
+    else:
+        unique_band_list = []
+        miles_per_venue_list = []
+
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
-                           unmatched_venue_list=venues_unmatched)
+                           unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list,
+                           miles_per_venue_list=miles_per_venue_list)
 
 
 if __name__ == "__main__":
