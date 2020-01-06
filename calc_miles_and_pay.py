@@ -63,9 +63,9 @@ def mileage_per_venue(gigs_object, distances):
     miles_per_venue_list = []
     for venue in by_venue_tracking_dict:
         if by_venue_tracking_dict[venue] == 'Not matched for mileage':
-            miles_per_venue_list.append('Venue: {: <20}  - Not matched for mileage'.format(venue))
+            miles_per_venue_list.append('{: <20}  - Not matched for mileage'.format(venue))
         else:
-            miles_per_venue_list.append('Venue: {: <20}  - Cumulative r/t mileage: {:0.1f}'.
+            miles_per_venue_list.append('{: <20}  - Cumulative r/t mileage: {:0.1f}'.
                                         format(venue, by_venue_tracking_dict[venue]))
 
     return miles_per_venue_list
@@ -198,6 +198,10 @@ python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.
     if args.verbose and venues_not_matched:
         for venue in venues_not_matched:
             print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(venue))
+
+    if not args.verbose:
+        print("\nA full list of gigs from {}".format(args.gigs_csv))
+        annualGigs.print_out_gig_by_gig()
 
     print('\n          ** > -  Thank you for using the command line version of calc_miles_and_pay  - < **')
     print('\n')

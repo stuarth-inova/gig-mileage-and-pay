@@ -27,6 +27,12 @@ p  {
   width: 50%;
 }
 
+.FancyTable {
+  border: 1px solid black;
+  font-family: arial;
+  color: DarkBlue;
+}
+
 HeaderImage {
   width: 250px;
   height: 175px;

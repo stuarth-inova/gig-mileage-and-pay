@@ -1,0 +1,27 @@
+{% extends "layout2.html" %}
+{% block title %}Gig Detailed List{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<h3></h3>
+<table class="FancyTable" cellpadding="10px">
+    <tr>
+        <th class="FancyTable">Date</th>
+        <th class="FancyTable">Band</th>
+        <th class="FancyTable">Venue</th>
+        <th class="FancyTable">Pay</th>
+        <th class="FancyTable">Comment</th>
+    </tr>
+    {% for gig in gig_dict %}
+    <tr>
+        <td class="FancyTable">{{ gig.date }}</td>
+        <td class="FancyTable">{{ gig.band }}</td>
+        <td class="FancyTable">{{ gig.venue }}</td>
+        <td class="FancyTable">{{ gig.pay }}</td>
+        <td class="FancyTable">{{ gig.comment }}</td>
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}

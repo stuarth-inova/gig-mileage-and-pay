@@ -1,6 +1,14 @@
-<!DOCTYPE html>
-<html lang="en">
-
+{% extends "layout2.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
 <h1>Index</h1>
-
-<p>Try route '/gigs' or '/summary/&lt;gig_input.csv&gt;'</p>
+<p>Try appending routes to the host in the URL like:</p>
+<ul>
+    <li>'/gigs'</li>
+    <li>'/summary/&lt;gig_input.csv&gt;'</li>
+    <li>'/summary/&lt;gig_input.csv&gt;/verbose'</li>
+</ul>
+{% endblock %}
