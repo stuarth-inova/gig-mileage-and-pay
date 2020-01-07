@@ -1,0 +1,44 @@
+{% extends "layout2.html" %}
+{% block title %}Gig Summary{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<h1>*** Gigs from {{ data_file }} ***</h1>
+<p>-------------------------------------------------</p>
+<h3>For {{ num_gigs }} gigs: {{ "%0.1f"|format(miles) }} miles; ${{ "%0.2f"|format(pay) }} pay</h3>
+<p>-------------------------------------------------</p>
+
+{% if unique_band_list %}
+<table class="FancyTable" cellpadding="30px">
+  <tr>
+      <td width="50%" class="FancyTable">
+            <h4>Unique set of venues from {{ data_file }}, with total round-trip miles to that venue</h4>
+            <ul>
+                {% for k in miles_per_venue_list %}
+                <li>{{k}}</li>
+                {% endfor %}
+            </ul>
+      </td>
+
+      <td width="50%" class="FancyTable">
+            <h4>Unique set of bands from {{ data_file }} is:</h4>
+            <ul>
+                {% for p in unique_band_list %}
+                <li>{{p}}</li>
+                {% endfor %}
+            </ul>
+      </td>
+  </tr>
+</table>
+{% endif %}
+
+{% if unmatched_venue_list %}
+    <h4>Unmatched venues; mileage not included in mileage total.</h4>
+    <ul>
+        {% for n in unmatched_venue_list %}
+        <li>{{n}}</li>
+        {% endfor %}
+    </ul>
+{% endif %}
+{% endblock %}

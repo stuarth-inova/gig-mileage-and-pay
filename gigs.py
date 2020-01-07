@@ -97,6 +97,18 @@ class Gigs:
                     print('Re-throwing error')
                     raise key_error
         print('')
+
+    def printable_gig_list(self):
+        """
+        Returns a list of dictionaries, rather than a dict of dictionaries as the object is instantiated. For web
+        table output
+        :return: list of gigs in chronological order (actually key order, counts on chron order input!! ToDO: Fix this
+        """
+        output_list = []
+        for key in sorted(self.gigs_dict):
+            output_list.append(self.gigs_dict[key])
+
+        return output_list
         
     def gig_keys(self):
         """
