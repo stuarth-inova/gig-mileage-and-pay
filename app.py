@@ -2,9 +2,37 @@
 
 from flask import Flask, escape, url_for, render_template
 import calc_miles_and_pay
+from flask_sqlalchemy import SQLAlchemy
+from datetime import date
 
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+
+class Gig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    date = db.Column(db.Date, unique=False, nullable=False)
+    venue = db.Column(db.String(120), unique=False, nullable=False)
+    pay = db.Column(db.Float, unique=False, nullable=True)
+    band = db.Column(db.String(60), unique=False, nullable=False)
+    comment = db.Column(db.String(250), unique=False, nullable=True)
+
+    def __repr__(self):
+        return '<Gig %r>' % self.id
+
+
+class Venue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    venue = db.Column(db.String(80), unique=True, nullable=False)
+    rt_miles_from_commonwealth = db.Column(db.Float, unique=False, nullable=True)
+    rt_miles_from_dry_bridge = db.Column(db.Float, unique=False, nullable=True)
+    city = db.Column(db.String(30), unique=False, nullable=True)
+
+    def __repr__(self):
+        return '<Venue %r>' % self.venue
 
 
 @app.route('/')

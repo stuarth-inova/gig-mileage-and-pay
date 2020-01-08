@@ -38,3 +38,6 @@ class VenueMileage:
             return self.venue_dict[venue]['round_trip_commonwealth']
         elif trip_origin == '741 dry bridge':
             return self.venue_dict[venue]['round_trip_dry_br']
+
+    def return_venue_dictionary(self):
+        return self.venue_dict

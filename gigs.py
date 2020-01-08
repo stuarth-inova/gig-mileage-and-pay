@@ -182,6 +182,9 @@ class Gigs:
 
         return set(non_unique_list)
 
+    def return_gigs_dictionary(self):
+        return self.gigs_dict
+
     # def rt_total_miles(self, venue, trip_origin='2517 commonwealth'):
     #     if trip_origin == '2517 commonwealth':
     #         return self.gig_dict[venue]['round_trip_commonwealth']
