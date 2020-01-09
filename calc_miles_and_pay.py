@@ -199,10 +199,6 @@ python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.
         for venue in venues_not_matched:
             print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(venue))
 
-    if not args.verbose:
-        print("\nA full list of gigs from {}".format(args.gigs_csv))
-        annualGigs.print_out_gig_by_gig()
-
     print('\n          ** > -  Thank you for using the command line version of calc_miles_and_pay  - < **')
     print('\n')
 

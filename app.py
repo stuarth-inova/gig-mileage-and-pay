@@ -18,6 +18,7 @@ class Gig(db.Model):
     venue = db.Column(db.String(120), unique=False, nullable=False)
     pay = db.Column(db.Float, unique=False, nullable=True)
     band = db.Column(db.String(60), unique=False, nullable=False)
+    trip_origin = db.Column(db.String(30), unique=False, nullable=True)
     comment = db.Column(db.String(250), unique=False, nullable=True)
 
     def __repr__(self):

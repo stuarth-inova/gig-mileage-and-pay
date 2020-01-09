@@ -8,11 +8,6 @@ from calc_miles_and_pay import process_distances_input_csv
 from datetime import date
 
 db.create_all()
-distances = process_distances_input_csv('distances.csv')
-
-#distances.print_out_mileage_list()
-
-distances_dict = distances.return_venue_dictionary()
 
 
 def populate_venue_distance_data(venue_dict):
@@ -48,17 +43,35 @@ def populate_trial_fake_gig_data():
     db.session.commit()
 
 
+def print_gigs_dictionary():
+    for gig in gigs_dictionary:
+        print('{} - type: {}'.format(gig, type(gig)))
+        print('{}'.format(gigs_dictionary[gig]))
+
+
+def populate_gig_data(gigs_dict):
+    for gig in gigs_dict:
+        add_gig = Gig(date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
+                      pay=gigs_dict[gig]['pay'], )
+
+        db.session.add(add_gig)
+        db.session.commit()
+
+
+distances = process_distances_input_csv('distances.csv')
+distances_dict = distances.return_venue_dictionary()
+
+#distances.print_out_mileage_list()
+
 # populate_venue_distance_data(distances_dict)
 
 # populate_trial_fake_gig_data()
 
-def populate_gig_data(gigs_dict):
-    pass
-
-
 gigs_object = process_gig_input_csv('gigs_2018.csv')
-gig_dict = gigs_object.return_gigs_dictionary()
+gigs_dictionary = gigs_object.return_gigs_dictionary()
 
-for gig in gig_dict:
-    print('{} - type: {}'.format(gig, type(gig)))
-    print('{}'.format(gig_dict[gig]))
+print_gigs_dictionary()
+
+# populate_gig_data(gigs_dictionary)
+
+
