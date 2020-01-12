@@ -24,7 +24,10 @@ class Gigs:
             gig_date_list = gig_event[2].split('/')
             gig_day = int(gig_date_list[1])
             gig_month = int(gig_date_list[0])
-            gig_year = int(gig_date_list[2]) + 2000    # Quite hard-coded for my data...
+            if int(gig_date_list[2]) < 1000:
+                gig_year = int(gig_date_list[2]) + 2000
+            else:
+                gig_year = int(gig_date_list[2])
             gig_date = date(gig_year, gig_month, gig_day)
             if gig_index not in self.gigs_dict:
                 self.gigs_dict[gig_index] = {}

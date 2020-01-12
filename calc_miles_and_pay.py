@@ -80,6 +80,7 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
     miles_sum = 0.0
     pay_sum = 0.0
     unmatched_venues = []
+    num_gigs = len(curr_gigs)
     for gig in curr_gigs:
         try:
             miles_sum += float(venue_distance.rt_miles(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
@@ -90,7 +91,6 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
                 pass
 
         pay_sum += float(annualGigs.gig_pay(gig))
-        num_gigs = len(curr_gigs)
 
     return miles_sum, pay_sum, num_gigs, gig_filename, unmatched_venues
 

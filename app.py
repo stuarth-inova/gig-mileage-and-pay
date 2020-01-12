@@ -3,6 +3,8 @@
 from flask import Flask, escape, url_for, render_template
 import calc_miles_and_pay
 from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import asc
+from sqlalchemy import desc
 from datetime import date
 
 
@@ -14,7 +16,7 @@ db = SQLAlchemy(app)
 
 class Gig(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    date = db.Column(db.Date, unique=False, nullable=False)
+    gig_date = db.Column(db.Date, unique=False, nullable=False)
     venue = db.Column(db.String(120), unique=False, nullable=False)
     pay = db.Column(db.Float, unique=False, nullable=True)
     band = db.Column(db.String(60), unique=False, nullable=False)
@@ -81,8 +83,12 @@ def summary(input_gigs, verbose_flag=None):
         input_gigs, annualGigs, venue_distance, verbose)
 
     if verbose:
-        unique_band_list = annualGigs.unique_band_list()
-        miles_per_venue_list = calc_miles_and_pay.mileage_per_venue(annualGigs, venue_distance)
+        #unique_band_list = annualGigs.unique_band_list()
+        try:
+            unique_band_list = give_unique_band_list_for_year('2014')
+            miles_per_venue_list = calc_miles_and_pay.mileage_per_venue(annualGigs, venue_distance)
+        except ValueError as val_err:
+            return render_template('error.html', exception=val_err)
     else:
         unique_band_list = []
         miles_per_venue_list = []
@@ -92,14 +98,36 @@ def summary(input_gigs, verbose_flag=None):
                            miles_per_venue_list=miles_per_venue_list)
 
 
-@app.route('/gigs/<input_gigs>')
-def gig_details(input_gigs):
-    try:
-        annualGigs = calc_miles_and_pay.process_gig_input_csv(input_gigs)
-    except EnvironmentError as env_err:    # Almost certainly File Not Found
-        return render_template('error.html', input_file=input_gigs, exception=env_err)
+def give_unique_band_list_for_year(year):
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
 
-    return render_template('gig_details.html', data_file=input_gigs, gig_dict=annualGigs.printable_gig_list())
+    band_list = [gig.band for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
+                 filter(Gig.gig_date <= end)]
+    return set(band_list)
+
+
+@app.route('/gigs/<gig_year>')
+def gig_details(gig_year):
+    try:
+        return render_template('gig_details.html', data_file=gig_year, gig_dict=db_printable_gig_list(gig_year))
+    except ValueError as val_err:
+        return render_template('error.html', exception=val_err)
+
+
+def db_printable_gig_list(year):
+    """
+    Try to reproduce the clean dump in a list to feed the templates pulling from the DB
+
+    Returns the default list of gigs for the year specified; this list "just worked" in my existing template - cool!
+    :return:
+    """
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
+
+    print_gigs = Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)
+
+    return print_gigs
 
 
 if __name__ == "__main__":

@@ -35,8 +35,8 @@ def populate_venue_distance_data(venue_dict):
 
 
 def populate_trial_fake_gig_data():
-    gig1 = Gig(date=date(2019, 1, 17), venue='Millers', pay=50, band='Cows')
-    gig2 = Gig(date=date(2019,1,25), venue='Ix', pay=80.50, band='Mama Tried')
+    gig1 = Gig(gig_date=date(2019, 1, 17), venue='Millers', pay=50, band='Cows')
+    gig2 = Gig(gig_date=date(2019, 1, 25), venue='Ix', pay=80.50, band='Mama Tried')
 
     db.session.add(gig1)
     db.session.add(gig2)
@@ -51,7 +51,7 @@ def print_gigs_dictionary():
 
 def populate_gig_data(gigs_dict):
     for gig in gigs_dict:
-        add_gig = Gig(date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
+        add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
                       pay=gigs_dict[gig]['pay'], )
 
         db.session.add(add_gig)
@@ -69,9 +69,16 @@ distances_dict = distances.return_venue_dictionary()
 
 gigs_object = process_gig_input_csv('gigs_2018.csv')
 gigs_dictionary = gigs_object.return_gigs_dictionary()
-
-print_gigs_dictionary()
-
 # populate_gig_data(gigs_dictionary)
 
+gigs_object = process_gig_input_csv('gigs_2014.csv')
+gigs_dictionary = gigs_object.return_gigs_dictionary()
+# populate_gig_data(gigs_dictionary)
 
+gigs_object = process_gig_input_csv('gigs_2016.csv')
+gigs_dictionary = gigs_object.return_gigs_dictionary()
+# populate_gig_data(gigs_dictionary)
+
+# print_gigs_dictionary()
+
+# gigs_object.print_out_gig_by_gig()
