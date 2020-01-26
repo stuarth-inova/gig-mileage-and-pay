@@ -3,6 +3,7 @@
 from app import db
 from app import Gig
 from app import Venue
+from sqlalchemy import asc
 from calc_miles_and_pay import process_gig_input_csv
 from calc_miles_and_pay import process_distances_input_csv
 from datetime import date
@@ -51,34 +52,75 @@ def print_gigs_dictionary():
 
 def populate_gig_data(gigs_dict):
     for gig in gigs_dict:
-        add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
-                      pay=gigs_dict[gig]['pay'], )
+        try:
+            add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
+                          pay=gigs_dict[gig]['pay'], trip_origin=gigs_dict[gig]['trip_origin'],
+                          comment=gigs_dict[gig]['comment'])
+        except KeyError as ke:
+            print('')
+            print('First try Key error: {}'.format(ke))
+            print('Arg 0: {}'.format(ke.args[0]))
+            print('')
+            try:
+                add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
+                              pay=gigs_dict[gig]['pay'], trip_origin='2517 Commonwealth',
+                              comment=gigs_dict[gig]['comment'])
+            except KeyError as ke2:
+                print('')
+                print('2nd try Key error: {}'.format(ke2))
+                print('Arg 0: {}'.format(ke2.args[0]))
+                print('')
+                add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
+                              pay=gigs_dict[gig]['pay'], trip_origin='2517 Commonwealth',
+                              comment=None)
 
         db.session.add(add_gig)
         db.session.commit()
 
 
-distances = process_distances_input_csv('distances.csv')
-distances_dict = distances.return_venue_dictionary()
+# distances = process_distances_input_csv('distances.csv')
+# distances_dict = distances.return_venue_dictionary()
 
-#distances.print_out_mileage_list()
+# distances.print_out_mileage_list()
 
 # populate_venue_distance_data(distances_dict)
 
 # populate_trial_fake_gig_data()
 
-gigs_object = process_gig_input_csv('gigs_2018.csv')
-gigs_dictionary = gigs_object.return_gigs_dictionary()
+# gigs_object = process_gig_input_csv('gigs_2018.csv')
+# gigs_dictionary = gigs_object.return_gigs_dictionary()
 # populate_gig_data(gigs_dictionary)
-
-gigs_object = process_gig_input_csv('gigs_2014.csv')
-gigs_dictionary = gigs_object.return_gigs_dictionary()
+#
+# gigs_object = process_gig_input_csv('gigs_2014.csv')
+# gigs_dictionary = gigs_object.return_gigs_dictionary()
 # populate_gig_data(gigs_dictionary)
-
-gigs_object = process_gig_input_csv('gigs_2016.csv')
-gigs_dictionary = gigs_object.return_gigs_dictionary()
+#
+# gigs_object = process_gig_input_csv('gigs_2016.csv')
+# gigs_dictionary = gigs_object.return_gigs_dictionary()
 # populate_gig_data(gigs_dictionary)
 
 # print_gigs_dictionary()
 
 # gigs_object.print_out_gig_by_gig()
+
+
+def give_miles_per_venue(year):
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
+
+    venue_list = [(gig.trip_origin, gig.venue) for gig in db.session.query(Gig.trip_origin, Gig.venue)
+                  .order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)]
+
+    user_id = session.query(User.id)
+
+    Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)
+
+    print('')
+    print('List is of type {} and length {}'.format(type(venue_list), len(venue_list)))
+    print('Venue and origin combined list:')
+    for item in venue_list:
+        print('{}'.format(item))
+    print('')
+
+
+# give_miles_per_venue(2014)

@@ -6,6 +6,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc
 from sqlalchemy import desc
 from datetime import date
+import re
 
 
 app = Flask(__name__)
@@ -83,10 +84,14 @@ def summary(input_gigs, verbose_flag=None):
         input_gigs, annualGigs, venue_distance, verbose)
 
     if verbose:
-        #unique_band_list = annualGigs.unique_band_list()
+        # unique_band_list = annualGigs.unique_band_list()
+        # miles_per_venue_list = calc_miles_and_pay.mileage_per_venue(annualGigs, venue_distance)
+
+        # Strip year out of filename
+        year = re.search(r'\d\d\d\d', input_gigs).group()
+        print('Year is {} and type {}'.format(year, type(year)))
         try:
-            unique_band_list = give_unique_band_list_for_year('2014')
-            miles_per_venue_list = calc_miles_and_pay.mileage_per_venue(annualGigs, venue_distance)
+            unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(year)
         except ValueError as val_err:
             return render_template('error.html', exception=val_err)
     else:
@@ -98,13 +103,58 @@ def summary(input_gigs, verbose_flag=None):
                            miles_per_venue_list=miles_per_venue_list)
 
 
-def give_unique_band_list_for_year(year):
+def give_unique_lists_bands_and_venues(year):
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
 
     band_list = [gig.band for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
                  filter(Gig.gig_date <= end)]
-    return set(band_list)
+    # venue_list = [gig.venue for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
+    #               filter(Gig.gig_date <= end)]
+    venue_list = give_miles_per_venue(year)
+
+    return set(band_list), venue_list
+
+
+def give_miles_per_venue(year):
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
+
+    venue_list = [(gig.trip_origin, gig.venue) for gig in db.session.query(Gig.trip_origin, Gig.venue)
+                  .order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)]
+
+    by_venue_tracking_dict = {}
+    for origin, gig_venue in venue_list:
+        try:
+            if origin == "2517 commonwealth":
+                rt_miles = db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig_venue).first()[0]
+            elif origin == "741 dry bridge":
+                rt_miles = db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig_venue).first()[0]
+            else:
+                print("Origin key didn't match!!")
+                raise KeyError
+        except KeyError as key_error:
+            # print('Mileage not tracked for venue {}'.format(venue))
+            if gig_venue not in by_venue_tracking_dict.keys():
+                by_venue_tracking_dict.update({gig_venue: 'Not matched for mileage'})
+        else:
+            if gig_venue in by_venue_tracking_dict.keys():
+                by_venue_tracking_dict[gig_venue] += rt_miles
+            else:
+                by_venue_tracking_dict.update({gig_venue: rt_miles})
+            # print('Cumulative distance for {} is {:0.1f} miles r/t'.format(venue, by_venue_tracking_dict[venue]))
+
+    miles_per_venue_list = []
+    for venue in by_venue_tracking_dict:
+        if by_venue_tracking_dict[venue] == 'Not matched for mileage':
+            miles_per_venue_list.append('{: <20}  - Not matched for mileage'.format(venue))
+        else:
+            miles_per_venue_list.append('{: <20}  - Cumulative r/t mileage: {:0.1f}'.
+                                        format(venue, by_venue_tracking_dict[venue]))
+
+    # miles_per_venue_list = [("Millers", 9.8), ("Ix", 11.1), ("Basic City", 34.0)]
+
+    return miles_per_venue_list
 
 
 @app.route('/gigs/<gig_year>')
