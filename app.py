@@ -126,14 +126,14 @@ def give_miles_per_venue(year):
     by_venue_tracking_dict = {}
     for origin, gig_venue in venue_list:
         try:
-            if origin == "2517 commonwealth":
+            if origin.lower() == "2517 commonwealth":
                 rt_miles = db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig_venue).first()[0]
-            elif origin == "741 dry bridge":
+            elif origin.lower() == "741 dry bridge":
                 rt_miles = db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig_venue).first()[0]
             else:
                 print("Origin key didn't match!!")
                 raise KeyError
-        except KeyError as key_error:
+        except (KeyError, TypeError):
             # print('Mileage not tracked for venue {}'.format(venue))
             if gig_venue not in by_venue_tracking_dict.keys():
                 by_venue_tracking_dict.update({gig_venue: 'Not matched for mileage'})
