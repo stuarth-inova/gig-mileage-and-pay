@@ -102,25 +102,3 @@ def populate_gig_data(gigs_dict):
 # print_gigs_dictionary()
 
 # gigs_object.print_out_gig_by_gig()
-
-
-def give_miles_per_venue(year):
-    start = date(int(year), 1, 1)
-    end = date(int(year), 12, 31)
-
-    venue_list = [(gig.trip_origin, gig.venue) for gig in db.session.query(Gig.trip_origin, Gig.venue)
-                  .order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)]
-
-    user_id = session.query(User.id)
-
-    Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)
-
-    print('')
-    print('List is of type {} and length {}'.format(type(venue_list), len(venue_list)))
-    print('Venue and origin combined list:')
-    for item in venue_list:
-        print('{}'.format(item))
-    print('')
-
-
-# give_miles_per_venue(2014)

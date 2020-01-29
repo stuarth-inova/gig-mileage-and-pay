@@ -52,6 +52,7 @@ def hello(name=None):
 
 
 @app.route('/gigs')
+@app.route('/gigs/')
 def gigs():
     return render_template('gigs.html')
 
@@ -84,9 +85,6 @@ def summary(input_gigs, verbose_flag=None):
         input_gigs, annualGigs, venue_distance, verbose)
 
     if verbose:
-        # unique_band_list = annualGigs.unique_band_list()
-        # miles_per_venue_list = calc_miles_and_pay.mileage_per_venue(annualGigs, venue_distance)
-
         # Strip year out of filename
         year = re.search(r'\d\d\d\d', input_gigs).group()
         print('Year is {} and type {}'.format(year, type(year)))
@@ -109,14 +107,18 @@ def give_unique_lists_bands_and_venues(year):
 
     band_list = [gig.band for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
                  filter(Gig.gig_date <= end)]
-    # venue_list = [gig.venue for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
-    #               filter(Gig.gig_date <= end)]
     venue_list = give_miles_per_venue(year)
 
     return set(band_list), venue_list
 
 
 def give_miles_per_venue(year):
+    """
+    Provides a list of text strings, each string represents a venue and the total r/t mileage to that venue for the year
+    in question.
+    :param year: Sting of year in question
+    :return: List of strings for publishing in an output table on the website
+    """
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
 
@@ -151,8 +153,6 @@ def give_miles_per_venue(year):
         else:
             miles_per_venue_list.append('{: <20}  - Cumulative r/t mileage: {:0.1f}'.
                                         format(venue, by_venue_tracking_dict[venue]))
-
-    # miles_per_venue_list = [("Millers", 9.8), ("Ix", 11.1), ("Basic City", 34.0)]
 
     return miles_per_venue_list
 
