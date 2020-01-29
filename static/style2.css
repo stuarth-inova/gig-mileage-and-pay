@@ -20,6 +20,12 @@ p  {
   font-size: 160%;
 }
 
+code {
+  color: DarkBlue;
+  font-family: Andale, monospace;
+  font-size: 160%
+}
+
 .center {
   display: block;
   margin-left: auto;
