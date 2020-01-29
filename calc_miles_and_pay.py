@@ -80,6 +80,7 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
     miles_sum = 0.0
     pay_sum = 0.0
     unmatched_venues = []
+    num_gigs = len(curr_gigs)
     for gig in curr_gigs:
         try:
             miles_sum += float(venue_distance.rt_miles(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
@@ -90,7 +91,6 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
                 pass
 
         pay_sum += float(annualGigs.gig_pay(gig))
-        num_gigs = len(curr_gigs)
 
     return miles_sum, pay_sum, num_gigs, gig_filename, unmatched_venues
 
@@ -198,10 +198,6 @@ python calc-mileage.py -g file_o_gigs.csv -m file_of_roundtrip_distance_to_gigs.
     if args.verbose and venues_not_matched:
         for venue in venues_not_matched:
             print('The venue "{}" was NOT matched in the distance file, not included in mileage total.'.format(venue))
-
-    if not args.verbose:
-        print("\nA full list of gigs from {}".format(args.gigs_csv))
-        annualGigs.print_out_gig_by_gig()
 
     print('\n          ** > -  Thank you for using the command line version of calc_miles_and_pay  - < **')
     print('\n')

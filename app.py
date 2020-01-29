@@ -2,9 +2,41 @@
 
 from flask import Flask, escape, url_for, render_template
 import calc_miles_and_pay
+from flask_sqlalchemy import SQLAlchemy
+from sqlalchemy import asc
+from sqlalchemy import desc
+from datetime import date
+import re
 
 
 app = Flask(__name__)
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+db = SQLAlchemy(app)
+
+
+class Gig(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    gig_date = db.Column(db.Date, unique=False, nullable=False)
+    venue = db.Column(db.String(120), unique=False, nullable=False)
+    pay = db.Column(db.Float, unique=False, nullable=True)
+    band = db.Column(db.String(60), unique=False, nullable=False)
+    trip_origin = db.Column(db.String(30), unique=False, nullable=True)
+    comment = db.Column(db.String(250), unique=False, nullable=True)
+
+    def __repr__(self):
+        return '<Gig %r>' % self.id
+
+
+class Venue(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    venue = db.Column(db.String(80), unique=True, nullable=False)
+    rt_miles_from_commonwealth = db.Column(db.Float, unique=False, nullable=True)
+    rt_miles_from_dry_bridge = db.Column(db.Float, unique=False, nullable=True)
+    city = db.Column(db.String(30), unique=False, nullable=True)
+
+    def __repr__(self):
+        return '<Venue %r>' % self.venue
 
 
 @app.route('/')
@@ -20,6 +52,7 @@ def hello(name=None):
 
 
 @app.route('/gigs')
+@app.route('/gigs/')
 def gigs():
     return render_template('gigs.html')
 
@@ -52,8 +85,13 @@ def summary(input_gigs, verbose_flag=None):
         input_gigs, annualGigs, venue_distance, verbose)
 
     if verbose:
-        unique_band_list = annualGigs.unique_band_list()
-        miles_per_venue_list = calc_miles_and_pay.mileage_per_venue(annualGigs, venue_distance)
+        # Strip year out of filename
+        year = re.search(r'\d\d\d\d', input_gigs).group()
+        print('Year is {} and type {}'.format(year, type(year)))
+        try:
+            unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(year)
+        except ValueError as val_err:
+            return render_template('error.html', exception=val_err)
     else:
         unique_band_list = []
         miles_per_venue_list = []
@@ -63,14 +101,83 @@ def summary(input_gigs, verbose_flag=None):
                            miles_per_venue_list=miles_per_venue_list)
 
 
-@app.route('/gigs/<input_gigs>')
-def gig_details(input_gigs):
-    try:
-        annualGigs = calc_miles_and_pay.process_gig_input_csv(input_gigs)
-    except EnvironmentError as env_err:    # Almost certainly File Not Found
-        return render_template('error.html', input_file=input_gigs, exception=env_err)
+def give_unique_lists_bands_and_venues(year):
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
 
-    return render_template('gig_details.html', data_file=input_gigs, gig_dict=annualGigs.printable_gig_list())
+    band_list = [gig.band for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
+                 filter(Gig.gig_date <= end)]
+    venue_list = give_miles_per_venue(year)
+
+    return set(band_list), venue_list
+
+
+def give_miles_per_venue(year):
+    """
+    Provides a list of text strings, each string represents a venue and the total r/t mileage to that venue for the year
+    in question.
+    :param year: Sting of year in question
+    :return: List of strings for publishing in an output table on the website
+    """
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
+
+    venue_list = [(gig.trip_origin, gig.venue) for gig in db.session.query(Gig.trip_origin, Gig.venue)
+                  .order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)]
+
+    by_venue_tracking_dict = {}
+    for origin, gig_venue in venue_list:
+        try:
+            if origin.lower() == "2517 commonwealth":
+                rt_miles = db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig_venue).first()[0]
+            elif origin.lower() == "741 dry bridge":
+                rt_miles = db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig_venue).first()[0]
+            else:
+                print("Origin key didn't match!!")
+                raise KeyError
+        except (KeyError, TypeError):
+            # print('Mileage not tracked for venue {}'.format(venue))
+            if gig_venue not in by_venue_tracking_dict.keys():
+                by_venue_tracking_dict.update({gig_venue: 'Not matched for mileage'})
+        else:
+            if gig_venue in by_venue_tracking_dict.keys():
+                by_venue_tracking_dict[gig_venue] += rt_miles
+            else:
+                by_venue_tracking_dict.update({gig_venue: rt_miles})
+            # print('Cumulative distance for {} is {:0.1f} miles r/t'.format(venue, by_venue_tracking_dict[venue]))
+
+    miles_per_venue_list = []
+    for venue in by_venue_tracking_dict:
+        if by_venue_tracking_dict[venue] == 'Not matched for mileage':
+            miles_per_venue_list.append('{: <20}  - Not matched for mileage'.format(venue))
+        else:
+            miles_per_venue_list.append('{: <20}  - Cumulative r/t mileage: {:0.1f}'.
+                                        format(venue, by_venue_tracking_dict[venue]))
+
+    return miles_per_venue_list
+
+
+@app.route('/gigs/<gig_year>')
+def gig_details(gig_year):
+    try:
+        return render_template('gig_details.html', data_file=gig_year, gig_dict=db_printable_gig_list(gig_year))
+    except ValueError as val_err:
+        return render_template('error.html', exception=val_err)
+
+
+def db_printable_gig_list(year):
+    """
+    Try to reproduce the clean dump in a list to feed the templates pulling from the DB
+
+    Returns the default list of gigs for the year specified; this list "just worked" in my existing template - cool!
+    :return:
+    """
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
+
+    print_gigs = Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)
+
+    return print_gigs
 
 
 if __name__ == "__main__":
