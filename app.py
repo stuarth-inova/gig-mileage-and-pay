@@ -74,20 +74,23 @@ def summary(input_gigs, verbose_flag=None):
     else:
         verbose = False
 
-    try:
-        annualGigs = calc_miles_and_pay.process_gig_input_csv(input_gigs)
-    except EnvironmentError as env_err:    # Almost certainly File Not Found
-        return render_template('error.html', input_file=input_gigs, exception=env_err)
+    # Strip year out of filename
+    year = re.search(r'\d\d\d\d', input_gigs).group()
+    # print('Year is {} and type {}'.format(year, type(year)))
 
-    venue_distance = calc_miles_and_pay.process_distances_input_csv(input_distances)
+    # try:
+    #     annualGigs = calc_miles_and_pay.process_gig_input_csv(input_gigs)
+    # except EnvironmentError as env_err:    # Almost certainly File Not Found
+    #     return render_template('error.html', input_file=input_gigs, exception=env_err)
+    #
+    # venue_distance = calc_miles_and_pay.process_distances_input_csv(input_distances)
 
-    miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = calc_miles_and_pay.gig_pay_distance_summary(
-        input_gigs, annualGigs, venue_distance, verbose)
+    # miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = calc_miles_and_pay.gig_pay_distance_summary(
+    #     input_gigs, annualGigs, venue_distance, verbose)
+
+    miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = annual_gig_pay_miles_summary(year, verbose)
 
     if verbose:
-        # Strip year out of filename
-        year = re.search(r'\d\d\d\d', input_gigs).group()
-        print('Year is {} and type {}'.format(year, type(year)))
         try:
             unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(year)
         except ValueError as val_err:
@@ -155,6 +158,40 @@ def give_miles_per_venue(year):
                                         format(venue, by_venue_tracking_dict[venue]))
 
     return miles_per_venue_list
+
+
+def annual_gig_pay_miles_summary(year, verbose):
+    """
+    Computes annual summary rollup totals for miles, pay, and number of gigs
+    :param year:
+    :param verbose:
+    :return: mile_total (float), pay_total(float), n_gigs(int), year(str), unmatched_venues(list of str)
+    """
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
+    mile_total = 0.0
+    pay_total = 0.0
+    n_gigs = 0
+    unmatched_venues = []
+
+    for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end):
+        try:
+            if gig.trip_origin.lower() == "2517 commonwealth":
+                mile_total += db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig.venue).first()[0]
+            elif gig.trip_origin.lower() == "741 dry bridge":
+                mile_total += db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig.venue).first()[0]
+            else:
+                raise KeyError
+        except (KeyError, TypeError):
+            if verbose:
+                unmatched_venues.append(gig.venue)
+            else:
+                pass
+
+        pay_total += gig.pay
+        n_gigs += 1
+
+    return mile_total, pay_total, n_gigs, year, unmatched_venues
 
 
 @app.route('/gigs/<gig_year>')
