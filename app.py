@@ -57,36 +57,31 @@ def gigs():
     return render_template('gigs.html')
 
 
+@app.route('/gigs/<gig_year>')
+def gig_details(gig_year):
+    try:
+        return render_template('gig_details.html', data_file=gig_year, gig_dict=db_printable_gig_list(gig_year))
+    except ValueError as val_err:
+        return render_template('error.html', exception=val_err)
+
+
 @app.route('/summary')
+@app.route('/summary/')
 def no_input_gigs_error():
-    env_err = 'Please append GIGS data CSV file in path after ' \
-              'summary. E.g. "http://my_url:my_port/summary/gigs_2019.csv"'
+    env_err = 'Please include year in path; ' \
+              'e .g. "http://my_url:my_port/summary/2019"'
     return render_template('error.html', exception=env_err)
 
 
-@app.route('/summary/<input_gigs>')
-@app.route('/summary/<input_gigs>/<verbose_flag>')
-def summary(input_gigs, verbose_flag=None):
-    input_distances = 'distances.csv'
-
+@app.route('/summary/<year>')
+@app.route('/summary/<year>/')
+@app.route('/summary/<year>/<verbose_flag>')
+def summary(year, verbose_flag=None):
+    # ToDo: handle arbitrary year input; later on it gets cast to int and blows up with ValueError
     if verbose_flag:
         verbose = True
     else:
         verbose = False
-
-    # Strip year out of filename
-    year = re.search(r'\d\d\d\d', input_gigs).group()
-    # print('Year is {} and type {}'.format(year, type(year)))
-
-    # try:
-    #     annualGigs = calc_miles_and_pay.process_gig_input_csv(input_gigs)
-    # except EnvironmentError as env_err:    # Almost certainly File Not Found
-    #     return render_template('error.html', input_file=input_gigs, exception=env_err)
-    #
-    # venue_distance = calc_miles_and_pay.process_distances_input_csv(input_distances)
-
-    # miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = calc_miles_and_pay.gig_pay_distance_summary(
-    #     input_gigs, annualGigs, venue_distance, verbose)
 
     miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = annual_gig_pay_miles_summary(year, verbose)
 
@@ -101,7 +96,7 @@ def summary(input_gigs, verbose_flag=None):
 
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
                            unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list,
-                           miles_per_venue_list=miles_per_venue_list)
+                           miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year))
 
 
 def give_unique_lists_bands_and_venues(year):
@@ -192,14 +187,6 @@ def annual_gig_pay_miles_summary(year, verbose):
         n_gigs += 1
 
     return mile_total, pay_total, n_gigs, year, unmatched_venues
-
-
-@app.route('/gigs/<gig_year>')
-def gig_details(gig_year):
-    try:
-        return render_template('gig_details.html', data_file=gig_year, gig_dict=db_printable_gig_list(gig_year))
-    except ValueError as val_err:
-        return render_template('error.html', exception=val_err)
 
 
 def db_printable_gig_list(year):
