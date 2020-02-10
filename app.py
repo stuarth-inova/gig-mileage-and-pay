@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, escape, url_for, render_template
+from flask import Flask, escape, url_for, render_template, request
 import calc_miles_and_pay
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc
@@ -63,6 +63,35 @@ def gig_details(gig_year):
         return render_template('gig_details.html', data_file=gig_year, gig_dict=db_printable_gig_list(gig_year))
     except ValueError as val_err:
         return render_template('error.html', exception=val_err)
+
+
+@app.route('/gigs/submit')
+def enter_new_gig():
+    """
+    Renders a form for entry of gig data
+    :return:
+    """
+    return render_template('submit_new_gig.html')
+
+
+@app.route('/gigs/new_gig_data', methods=['POST', 'GET'])
+def submit_new_gig():
+    """
+    Process form data for entry of new gig
+    :return:
+    """
+    if request.method == 'POST':
+        result = request.form
+        # print('')
+        # print('Contents of request.items:')
+        # for item in result.items():
+        #     print('Item: {}  - of type: {}'.format(item, type(item)))
+        #     for element in item:
+        #         print('Element: {}  -of type: {}'.format(element, type(element)))
+
+        return render_template("gig_data_input_echo.html", result=result)
+    else:
+        return render_template('error.html', exception='Improper form submission!')
 
 
 @app.route('/summary')
