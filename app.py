@@ -82,12 +82,12 @@ def submit_new_gig():
     """
     if request.method == 'POST':
         result = request.form
-        # print('')
-        # print('Contents of request.items:')
-        # for item in result.items():
-        #     print('Item: {}  - of type: {}'.format(item, type(item)))
-        #     for element in item:
-        #         print('Element: {}  -of type: {}'.format(element, type(element)))
+        print('')
+        print('Contents of request.items:')
+        for item in result.items():
+            print('Item: {}  - of type: {}'.format(item, type(item)))
+            for element in item:
+                print('Element: {}  -of type: {}'.format(element, type(element)))
 
         return render_template("gig_data_input_echo.html", result=result)
     else:
