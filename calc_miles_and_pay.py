@@ -53,6 +53,9 @@ def mileage_per_venue(gigs_object, distances):
             # print('Mileage not tracked for venue {}'.format(venue))
             if venue not in by_venue_tracking_dict.keys():
                 by_venue_tracking_dict.update({venue: 'Not matched for mileage'})
+        except ValueError as val_error:
+            print('Value Error: {}'.format(val_error))
+            print('For venue: {} and origin {}'.format(venue, origin))
         else:
             if venue in by_venue_tracking_dict.keys():
                 by_venue_tracking_dict[venue] += rt_miles
@@ -89,6 +92,9 @@ def gig_pay_distance_summary(gig_filename, annualGigs, venue_distance, verbose_f
                 unmatched_venues.append(annualGigs.gig_venue(gig))
             else:
                 pass
+        except ValueError as val_error:
+            print('Value Error: {}'.format(val_error))
+            print('For venue: {} and origin {}'.format(annualGigs.gig_venue(gig), annualGigs.gig_origin(gig)))
 
         pay_sum += float(annualGigs.gig_pay(gig))
 
