@@ -14,7 +14,7 @@
 *.log
 *.sql
 *.csv
-*.lock
+*.db
 
 # IDE files
 */.idea
