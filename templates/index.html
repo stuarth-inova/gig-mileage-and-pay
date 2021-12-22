@@ -8,7 +8,15 @@
 <p>Try appending routes to the host in the URL like:</p>
 <ul>
     <li>'/gigs'</li>
-    <li>'/summary/&lt;gig_input.csv&gt;'</li>
-    <li>'/summary/&lt;gig_input.csv&gt;/verbose'</li>
+    <li>'/summary/&lt;gig year&gt;'</li>
+    <li>'/summary/&lt;gig year&gt;/verbose'</li>
+
+    <p>For 'gig year', try 2016, 2018, 2019, etc. Here are some links to years that have data:</p>
+    <form method="get" action='/summary/2019'>
+        <button id="summary2019Button", class="button" >Summary of 2019 gigs</button>
+    </form>
+    <form method="get" action='/gigs/2019'>
+        <button id="gigs2019Button", class="button" >Show 2019 gigs</button>
+    </form>
 </ul>
 {% endblock %}

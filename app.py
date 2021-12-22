@@ -91,7 +91,7 @@ def submit_new_gig():
 
         return render_template("gig_data_input_echo.html", result=result)
     else:
-        return render_template('error.html', exception='Improper form submission!')
+        return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
 
 @app.route('/summary')
@@ -116,7 +116,7 @@ def summary(year, verbose_flag=None):
 
     if verbose:
         try:
-            unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(year)
+            unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(int(year))
         except ValueError as val_err:
             return render_template('error.html', exception=val_err)
     else:
