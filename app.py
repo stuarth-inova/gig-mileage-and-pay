@@ -146,6 +146,8 @@ def give_miles_per_venue(year):
     :param year: Sting of year in question
     :return: List of strings for publishing in an output table on the website
     """
+
+    # ToDo: The venue distance checks only check that venue is present, NOT that for a given start there is a mileage value
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
 
