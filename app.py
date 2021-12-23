@@ -82,14 +82,42 @@ def submit_new_gig():
     """
     if request.method == 'POST':
         result = request.form
-        print('')
-        print('Contents of request.items:')
-        for item in result.items():
-            print('Item: {}  - of type: {}'.format(item, type(item)))
-            for element in item:
-                print('Element: {}  -of type: {}'.format(element, type(element)))
+        gig_date = request.form.get('date')
+        venue = request.form.get('venue')
+        band = request.form.get('band')
+        pay = request.form.get('pay')
+        trip_origin = request.form.get('trip_origin')
+        comment = request.form.get('comment')
 
-        return render_template("gig_data_input_echo.html", result=result)
+        bad_venue = False
+
+        existing_venue = Venue.query.filter_by(venue=venue.lower()).first()
+        if existing_venue is None:
+            print('No venue match found')
+            bad_venue = True
+        else:
+            print('Existing venue: {}'.format(existing_venue))
+
+        # print('')
+        # print('Contents of request.items:')
+        # for item in result.items():
+        #     print('** !> Old array ****')
+        #     print('Item: {}  - of type: {}'.format(item, type(item)))
+        #     for element in item:
+        #         print('Element: {}  -of type: {}'.format(element, type(element)))
+        #
+        # input_venue = [gig_date, venue, band, pay, trip_origin, comment]
+        # for x in range(len(input_venue)):
+        #     print('** !> New by Variables ****')
+        #     print('Index: {}  - Value: {}'.format(x, input_venue[x]))
+
+        if bad_venue:
+            return render_template('venue_error.html', missing_venue=venue)
+        else:
+            return render_template("gig_data_input_echo.html", result=result)
+
+        #try:
+
     else:
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
@@ -196,6 +224,7 @@ def annual_gig_pay_miles_summary(year, verbose):
     :param verbose:
     :return: mile_total (float), pay_total(float), n_gigs(int), year(str), unmatched_venues(list of str)
     """
+    # ToDo: some gigs don't get mileage cost - right now handled by no RT data in the 'venue' table
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
     mile_total = 0.0

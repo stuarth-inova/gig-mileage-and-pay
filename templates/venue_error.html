@@ -1,0 +1,9 @@
+{% extends "layout2.html" %}
+{% block title %}Venue NOT FOUND!!{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+    <h1>Venue Mismatch!!</h1>
+    <h3>The venue you specified as your gig location: "{{ missing_venue }}"; is not present in distances table.</h3>
+{% endblock %}
