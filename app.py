@@ -140,8 +140,6 @@ def summary(year, verbose_flag=None):
     else:
         verbose = False
 
-    self_verbose_url = '/summary/{}/verbose'.format(year)
-
     miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = annual_gig_pay_miles_summary(year, verbose)
 
     if verbose:
@@ -156,7 +154,7 @@ def summary(year, verbose_flag=None):
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
                            unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list,
                            miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year),
-                           self_verbose_url=self_verbose_url)
+                           self_verbose_url=url_for('summary', year=year, verbose_flag='verbose'))
 
 
 def give_unique_lists_bands_and_venues(year):
