@@ -90,34 +90,45 @@ def submit_new_gig():
         comment = request.form.get('comment')
 
         bad_venue = False
-
         existing_venue = Venue.query.filter_by(venue=venue.lower()).first()
         if existing_venue is None:
-            print('No venue match found')
             bad_venue = True
+            error_message = 'Venue not found in database'
         else:
-            print('Existing venue: {}'.format(existing_venue))
-
-        # print('')
-        # print('Contents of request.items:')
-        # for item in result.items():
-        #     print('** !> Old array ****')
-        #     print('Item: {}  - of type: {}'.format(item, type(item)))
-        #     for element in item:
-        #         print('Element: {}  -of type: {}'.format(element, type(element)))
-        #
-        # input_venue = [gig_date, venue, band, pay, trip_origin, comment]
-        # for x in range(len(input_venue)):
-        #     print('** !> New by Variables ****')
-        #     print('Index: {}  - Value: {}'.format(x, input_venue[x]))
+            existing_trip_start = None
+            if '741 dry bridge' in trip_origin.lower():
+                existing_trip_start = \
+                    db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == venue.lower()).first()[0]
+                print('Value "existing_trip_start" after 741 check: {}'.format(existing_trip_start))
+                trip_origin = '741 dry bridge'
+            elif '2517 commonwealth' in trip_origin.lower():
+                existing_trip_start = \
+                    db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == venue.lower()).first()[0]
+                print('Value "existing_trip_start" after 2517 check: {}'.format(existing_trip_start))
+                trip_origin = '2517 commonwealth'
+            if existing_trip_start is None:
+                bad_venue = True
+                error_message = 'Mileage for {} not present for trip start {}'.format(venue, trip_origin)
 
         if bad_venue:
-            return render_template('venue_error.html', missing_venue=venue)
+            return render_template('venue_error.html', problem_venue=venue, message=error_message)
         else:
-            return render_template("gig_data_input_echo.html", result=result)
-
-        #try:
-
+            print('Gig date value: {} - Type: {}'.format(gig_date, type(gig_date)))
+            try:
+                new_gig = Gig(
+                    gig_date=date.fromisoformat(gig_date),
+                    venue=venue.lower(),
+                    pay=pay.strip('$'),
+                    band=band,
+                    trip_origin=trip_origin,
+                    comment=comment
+                )
+                db.session.add(new_gig)
+                db.session.commit()
+            except (ValueError, KeyError) as db_error:
+                return render_template("error.html", exception=db_error)
+            else:
+                return render_template("gig_data_input_echo.html", result=result)
     else:
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 

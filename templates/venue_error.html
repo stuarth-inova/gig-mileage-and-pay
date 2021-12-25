@@ -5,5 +5,5 @@
 {% endblock %}
 {% block content %}
     <h1>Venue Mismatch!!</h1>
-    <h3>The venue you specified as your gig location: "{{ missing_venue }}"; is not present in distances table.</h3>
+    <h3>The venue you specified as your gig location: "{{ problem_venue }}" has this issue: {{ message }}</h3>
 {% endblock %}
