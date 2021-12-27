@@ -7,10 +7,10 @@
 <h1>Venue Mismatch!!</h1>
 <h3>The venue you specified as your gig location: "{{ problem_venue }}" has this issue: {{ message }}</h3>
 <form action = "/venue/add_update_venue/{{ action }}" method = "POST">
-    <p>Venue <input type = "text" name = "venue" /></p>
-    <p>Round Trip Mileage from 2517 Commonwealth Dr <input type = "text" name = "rt_miles_from_commonwealth" /></p>
-    <p>Round Trip Mileage from 741 Dry Bridge Rd <input type ="text" name = "rt_miles_from_dry_bridge" /></p>
-    <p>City where venue is <input type ="text" name = "city" /></p>
-    <p><input type = "submit" value = "Submit" class = "button" /></p>
+    <p>Venue <input type="text" name="venue" value="{{ venue }}" /></p>
+    <p>Round Trip Mileage from 2517 Commonwealth Dr <input type="text" name="rt_miles_from_commonwealth" value="{{ rt_miles_from_commonwealth }}" /></p>
+    <p>Round Trip Mileage from 741 Dry Bridge Rd <input type="text" name="rt_miles_from_dry_bridge" value="{{ rt_miles_from_dry_bridge }}"/></p>
+    <p>City where venue is <input type="text" name="city" value="{{ city }}"/></p>
+    <p><input type="submit" value="Submit" class="button"/></p>
 </form>
 {% endblock %}

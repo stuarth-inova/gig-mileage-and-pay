@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, escape, url_for, render_template, request
+from flask import Flask, escape, url_for, render_template, request, redirect
 import calc_miles_and_pay
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc
@@ -73,13 +73,19 @@ def enter_new_gig():
     return render_template('submit_new_gig.html')
 
 
-@app.route('/venue/submit')
-def venue_update_form():
+@app.route('/venue/submit/<problem_venue>/<message>/<action>')
+def venue_update_form(problem_venue=None, message=None, action='add'):
     """
-    Renders a fomr for entry/update of venue data
+    Renders a form for entry/update of venue data; hydrates form with data for existing venue
     :return:
     """
-    return render_template('submit_new_venue.html')
+    if action == 'add':
+        return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message, action=action)
+    elif action == 'update':
+        db_venue = Venue.query.filter_by(venue=problem_venue.lower()).first()
+        return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message, action=action,
+                               venue=db_venue.venue, rt_miles_from_commonwealth=db_venue.rt_miles_from_commonwealth,
+                               rt_miles_from_dry_bridge=db_venue.rt_miles_from_dry_bridge, city=db_venue.city)
 
 
 @app.route('/gigs/new_gig_data', methods=['POST', 'GET'])
@@ -124,13 +130,8 @@ def submit_new_gig():
                     error_message = 'Mileage for {} not present for trip start {}'.format(venue, trip_origin)
 
         if bad_venue:
-            if query_param == 'update':
-                return render_template('submit_new_venue.html', problem_venue=venue, message=error_message,
-                                       venue=existing_venue.venue, rt_miles_from_dry_bridge=existing_venue.rt_miles_from_dry_bridge,
-                                       rt_miles_from_commonwealth=existing_venue.rt_miles_from_commonwealth,
-                                       city=existing_venue.city, action=query_param)
-            elif query_param == 'add':
-                return render_template('submit_new_venue.html', problem_venue=venue, message=error_message, action=query_param)
+            return redirect(url_for('venue_update_form', problem_venue=venue, message=error_message,
+                                    action=query_param))
         else:
             print('Gig date value: {} - Type: {}'.format(gig_date, type(gig_date)))
             try:
