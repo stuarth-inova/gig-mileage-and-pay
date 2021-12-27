@@ -73,21 +73,6 @@ def enter_new_gig():
     return render_template('submit_new_gig.html')
 
 
-@app.route('/venue/submit/<problem_venue>/<message>/<action>')
-def venue_update_form(problem_venue=None, message=None, action='add'):
-    """
-    Renders a form for entry/update of venue data; hydrates form with data for existing venue
-    :return:
-    """
-    if action == 'add':
-        return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message, action=action)
-    elif action == 'update':
-        db_venue = Venue.query.filter_by(venue=problem_venue.lower()).first()
-        return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message, action=action,
-                               venue=db_venue.venue, rt_miles_from_commonwealth=db_venue.rt_miles_from_commonwealth,
-                               rt_miles_from_dry_bridge=db_venue.rt_miles_from_dry_bridge, city=db_venue.city)
-
-
 @app.route('/gigs/new_gig_data', methods=['POST', 'GET'])
 def submit_new_gig():
     """
@@ -103,35 +88,32 @@ def submit_new_gig():
         trip_origin = request.form.get('trip_origin')
         comment = request.form.get('comment')
 
-        bad_venue = False
         existing_venue = Venue.query.filter_by(venue=venue.lower()).first()
         if existing_venue is None:
-            bad_venue = True
-            query_param = 'add'
             error_message = 'Venue not found in database'
+            return redirect(url_for('add_venue_form', problem_venue=venue, message=error_message))
         else:
-            existing_trip_start = None
+            missing_mileage = False
             if '741 dry bridge' in trip_origin.lower():
-                print('Value "rt milet" for 741: {}'.format(existing_venue.rt_miles_from_dry_bridge))
-                if existing_venue.rt_miles_from_dry_bridge:
-                    trip_origin = '741 dry bridge'
-                else:
-                    bad_venue = True
-                    query_param = 'update'
-                    error_message = 'Mileage for {} not present for trip start {}'.format(venue, trip_origin)
+                trip_origin = '741 dry bridge'
+                print('Value "rt miles" for 741: {}'.format(existing_venue.rt_miles_from_dry_bridge))
+                if not existing_venue.rt_miles_from_dry_bridge:
+                    missing_mileage = True
+                    error_message = 'Mileage for {} not present for 741 Dry Bridge trip origin'.format(venue)
 
             elif '2517 commonwealth' in trip_origin.lower():
+                trip_origin = '2517 commonwealth'
                 print('Value "rt miles" for 2517: {}'.format(existing_venue.rt_miles_from_commonwealth))
-                if existing_venue.rt_miles_from_commonwealth:
-                    trip_origin = '2517 commonwealth'
-                else:
-                    bad_venue = True
-                    query_param = 'update'
-                    error_message = 'Mileage for {} not present for trip start {}'.format(venue, trip_origin)
+                if not existing_venue.rt_miles_from_commonwealth:
+                    missing_mileage = True
+                    error_message = 'Mileage for {} not present for 2517 Commonwealth trip origin'.format(venue)
+            else:
+                print('Unknown Trip Origin: {}'.format(trip_origin))
+                render_template("error.html", exception='Unknown trip origin {} specified!!'.format(trip_origin))
 
-        if bad_venue:
-            return redirect(url_for('venue_update_form', problem_venue=venue, message=error_message,
-                                    action=query_param))
+        if missing_mileage:
+            return redirect(url_for('update_venue_mileage', problem_venue=venue, message=error_message,
+                                    trip_origin=trip_origin))
         else:
             print('Gig date value: {} - Type: {}'.format(gig_date, type(gig_date)))
             try:
@@ -153,10 +135,32 @@ def submit_new_gig():
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
 
-@app.route('/venue/add_update_venue/<action>', methods=['POST', 'GET'])
-def enter_update_venue(action):
+@app.route('/venue/add/<problem_venue>/<message>')
+def add_venue_form(problem_venue=None, message=None):
     """
-    Process form data to enter new venues or update existing venue mileage data
+    Renders a form for entry of new venue
+    :return:
+    """
+    return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message)
+
+
+@app.route('/venue/update/<problem_venue>/<trip_origin>/<message>')
+def update_venue_mileage(problem_venue, trip_origin, message=None):
+    """
+    Renders a form to add missing round trip mileage from a particular trip origin to an existing venue
+    :param problem_venue: Venue missing round-trip mileage from trip_origin
+    :param trip_origin: Location user was living when the gig occurred
+    :param message: Message specifying issue
+    :return:
+    """
+    return render_template('update_rt_mileage.html', problem_venue=problem_venue, message=message,
+                           venue=problem_venue.lower, trip_origin=trip_origin)
+
+
+@app.route('/venue/add_venue', methods=['POST', 'GET'])
+def add_venue():
+    """
+    Process form data to enter new venue
     :return:
     """
     if request.method == 'POST':
@@ -165,14 +169,25 @@ def enter_update_venue(action):
         rt_miles_from_commonwealth = request.form.get('rt_miles_from_commonwealth')
         rt_miles_from_dry_bridge = request.form.get('rt_miles_from_dry_bridge')
         city = request.form.get('city')
-        #action = request.query_string
 
-        if action == 'add':
-            print('ADD venue operation')
-            return render_template('gig_data_input_echo.html', result=result)
-        elif action == 'update':
-            print('UPDATE venue operation')
-            return render_template('gig_data_input_echo.html', result=result)
+        print('ADD venue operation')
+        return render_template('gig_data_input_echo.html', result=result)
+    else:
+        return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
+
+
+@app.route('/venue/update_venue/<venue>/<trip_origin>', methods=['POST', 'GET'])
+def update_venue(venue, trip_origin):
+    """
+    Process form data to update existing venue with missing round-trip mileage
+    :return:
+    """
+    if request.method == 'POST':
+        result = request.form
+        rt_mileage = request.form.get('rt_mileage')
+
+        print('UPDATE venue operation')
+        return render_template('gig_data_input_echo.html', result=result)
     else:
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
