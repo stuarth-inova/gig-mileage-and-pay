@@ -208,7 +208,7 @@ def update_venue(venue, trip_origin):
             db.session.commit()
             return render_template('gig_data_input_echo.html', result=result)
         elif '2517 commonwealth' in trip_origin.lower():
-            updating_venue = Venue.query.filter_by(venue=venue.lower()).update(dict(rt_miles_from_dry_bridge=rt_mileage))
+            updating_venue = Venue.query.filter_by(venue=venue.lower()).update(dict(rt_miles_from_commonwealth=rt_mileage))
             db.session.commit()
             return render_template('gig_data_input_echo.html', result=result)
         else:
