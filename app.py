@@ -258,7 +258,7 @@ def give_unique_lists_bands_and_venues(year):
     end = date(int(year), 12, 31)
 
     band_list = [gig.band for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
-        filter(Gig.gig_date <= end)]
+                 filter(Gig.gig_date <= end)]
     venue_list = give_miles_per_venue(year)
 
     return set(band_list), venue_list
