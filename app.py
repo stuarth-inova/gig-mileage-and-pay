@@ -157,21 +157,32 @@ def update_venue_mileage(problem_venue, trip_origin, message=None):
                            venue=problem_venue.lower, trip_origin=trip_origin)
 
 
-@app.route('/venue/add_venue', methods=['POST', 'GET'])
-def add_venue():
+@app.route('/venue/add_venue/<venue>', methods=['POST', 'GET'])
+def add_venue(venue):
     """
     Process form data to enter new venue
     :return:
     """
     if request.method == 'POST':
         result = request.form
-        venue = request.form.get('venue')
         rt_miles_from_commonwealth = request.form.get('rt_miles_from_commonwealth')
         rt_miles_from_dry_bridge = request.form.get('rt_miles_from_dry_bridge')
         city = request.form.get('city')
 
         print('ADD venue operation')
-        return render_template('gig_data_input_echo.html', result=result)
+        try:
+            new_venue = Venue(
+                venue=venue.lower(),
+                rt_miles_from_commonwealth=rt_miles_from_commonwealth,
+                rt_miles_from_dry_bridge=rt_miles_from_dry_bridge,
+                city=city,
+            )
+            db.session.add(new_venue)
+            db.session.commit()
+        except (ValueError, KeyError) as db_error:
+            return render_template("error.html", exception=db_error)
+        else:
+            return render_template("gig_data_input_echo.html", result=result)
     else:
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
@@ -187,7 +198,17 @@ def update_venue(venue, trip_origin):
         rt_mileage = request.form.get('rt_mileage')
 
         print('UPDATE venue operation')
-        return render_template('gig_data_input_echo.html', result=result)
+        if '741 dry bridge' in trip_origin.lower():
+            updating_venue = Venue.query.filter_by(venue=venue.lower()).update(dict(rt_miles_from_dry_bridge=rt_mileage))
+            db.session.commit()
+            return render_template('gig_data_input_echo.html', result=result)
+        elif '2517 commonwealth' in trip_origin.lower():
+            updating_venue = Venue.query.filter_by(venue=venue.lower()).update(dict(rt_miles_from_dry_bridge=rt_mileage))
+            db.session.commit()
+            return render_template('gig_data_input_echo.html', result=result)
+        else:
+            print('Unknown Trip Origin: {}'.format(trip_origin))
+            render_template("error.html", exception='Unknown trip origin {} specified!!'.format(trip_origin))
     else:
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
