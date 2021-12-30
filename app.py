@@ -154,7 +154,7 @@ def update_venue_mileage(problem_venue, trip_origin, message=None):
     :return:
     """
     return render_template('update_rt_mileage.html', problem_venue=problem_venue, message=message,
-                           venue=problem_venue.lower, trip_origin=trip_origin)
+                           venue=problem_venue.lower(), trip_origin=trip_origin)
 
 
 @app.route('/venue/add_venue/<venue>', methods=['POST', 'GET'])
@@ -195,7 +195,12 @@ def update_venue(venue, trip_origin):
     """
     if request.method == 'POST':
         result = request.form
-        rt_mileage = request.form.get('rt_mileage')
+        rt_mileage = request.form.get('rt_miles')
+
+        print('***')
+        print('in "update_venue" after ingestion: trip origin: {} - r/t mileage: {}'.format(trip_origin, rt_mileage))
+        print('and venue: {}'.format(venue))
+        print('***')
 
         print('UPDATE venue operation')
         if '741 dry bridge' in trip_origin.lower():
