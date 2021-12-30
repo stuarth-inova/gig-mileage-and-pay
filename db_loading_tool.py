@@ -80,11 +80,10 @@ def populate_gig_data(gigs_dict):
 
 # distances = process_distances_input_csv('distances.csv')
 # distances_dict = distances.return_venue_dictionary()
-
-# distances.print_out_mileage_list()
-
+#
 # populate_venue_distance_data(distances_dict)
 
+# distances.print_out_mileage_list()
 # populate_trial_fake_gig_data()
 
 # gigs_object = process_gig_input_csv('gigs_2018.csv')
@@ -98,6 +97,10 @@ def populate_gig_data(gigs_dict):
 # gigs_object = process_gig_input_csv('gigs_2016.csv')
 # gigs_dictionary = gigs_object.return_gigs_dictionary()
 # populate_gig_data(gigs_dictionary)
+
+gigs_object = process_gig_input_csv('gigs_2019.csv')
+gigs_dictionary = gigs_object.return_gigs_dictionary()
+populate_gig_data(gigs_dictionary)
 
 # print_gigs_dictionary()
 

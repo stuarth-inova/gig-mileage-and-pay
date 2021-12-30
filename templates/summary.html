@@ -9,11 +9,12 @@
 <h3>For {{ num_gigs }} gigs: {{ "%0.1f"|format(miles) }} miles; ${{ "%0.2f"|format(pay) }} pay</h3>
 <p>-------------------------------------------------</p>
 
+<form method="get" action='{{ self_verbose_url }}'>
+    <button id="verbose", class="button" >Verbose Summary</button>
+</form>
 <form method="get" action='{{ gigs_url }}'>
         <button id="gigsButton", class="button" >Show Gigs</button>
-    </div>
 </form>
-
 
 {% if unique_band_list %}
 <table class="FancyTable" cellpadding="30px">

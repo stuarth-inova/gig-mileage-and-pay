@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from flask import Flask, escape, url_for, render_template
+from flask import Flask, escape, url_for, render_template, request, redirect
 import calc_miles_and_pay
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc
@@ -8,9 +8,8 @@ from sqlalchemy import desc
 from datetime import date
 import re
 
-
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/stuartholme/gig-mileage-and-pay/test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -65,6 +64,160 @@ def gig_details(gig_year):
         return render_template('error.html', exception=val_err)
 
 
+@app.route('/gigs/submit')
+def enter_new_gig():
+    """
+    Renders a form for entry of gig data
+    :return:
+    """
+    return render_template('submit_new_gig.html')
+
+
+@app.route('/gigs/new_gig_data', methods=['POST', 'GET'])
+def submit_new_gig():
+    """
+    Process form data for entry of new gig
+    :return:
+    """
+    if request.method == 'POST':
+        result = request.form
+        gig_date = request.form.get('date')
+        venue = request.form.get('venue')
+        band = request.form.get('band')
+        pay = request.form.get('pay')
+        trip_origin = request.form.get('trip_origin')
+        comment = request.form.get('comment')
+
+        existing_venue = Venue.query.filter_by(venue=venue.lower()).first()
+        if existing_venue is None:
+            error_message = 'Venue not found in database'
+            return redirect(url_for('add_venue_form', problem_venue=venue, message=error_message))
+        else:
+            missing_mileage = False
+            if '741 dry bridge' in trip_origin.lower():
+                trip_origin = '741 dry bridge'
+                print('Value "rt miles" for 741: {}'.format(existing_venue.rt_miles_from_dry_bridge))
+                if not existing_venue.rt_miles_from_dry_bridge:
+                    missing_mileage = True
+                    error_message = 'Mileage for {} not present for 741 Dry Bridge trip origin'.format(venue)
+
+            elif '2517 commonwealth' in trip_origin.lower():
+                trip_origin = '2517 commonwealth'
+                print('Value "rt miles" for 2517: {}'.format(existing_venue.rt_miles_from_commonwealth))
+                if not existing_venue.rt_miles_from_commonwealth:
+                    missing_mileage = True
+                    error_message = 'Mileage for {} not present for 2517 Commonwealth trip origin'.format(venue)
+            else:
+                print('Unknown Trip Origin: {}'.format(trip_origin))
+                render_template("error.html", exception='Unknown trip origin {} specified!!'.format(trip_origin))
+
+        if missing_mileage:
+            return redirect(url_for('update_venue_mileage', problem_venue=venue, message=error_message,
+                                    trip_origin=trip_origin))
+        else:
+            print('Gig date value: {} - Type: {}'.format(gig_date, type(gig_date)))
+            try:
+                new_gig = Gig(
+                    gig_date=date.fromisoformat(gig_date),
+                    venue=venue.lower(),
+                    pay=pay.strip('$'),
+                    band=band,
+                    trip_origin=trip_origin,
+                    comment=comment
+                )
+                db.session.add(new_gig)
+                db.session.commit()
+            except (ValueError, KeyError) as db_error:
+                return render_template("error.html", exception=db_error)
+            else:
+                return render_template("gig_data_input_echo.html", result=result)
+    else:
+        return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
+
+
+@app.route('/venue/add/<problem_venue>/<message>')
+def add_venue_form(problem_venue=None, message=None):
+    """
+    Renders a form for entry of new venue
+    :return:
+    """
+    return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message)
+
+
+@app.route('/venue/update/<problem_venue>/<trip_origin>/<message>')
+def update_venue_mileage(problem_venue, trip_origin, message=None):
+    """
+    Renders a form to add missing round trip mileage from a particular trip origin to an existing venue
+    :param problem_venue: Venue missing round-trip mileage from trip_origin
+    :param trip_origin: Location user was living when the gig occurred
+    :param message: Message specifying issue
+    :return:
+    """
+    return render_template('update_rt_mileage.html', problem_venue=problem_venue, message=message,
+                           venue=problem_venue.lower(), trip_origin=trip_origin)
+
+
+@app.route('/venue/add_venue/<venue>', methods=['POST', 'GET'])
+def add_venue(venue):
+    """
+    Process form data to enter new venue
+    :return:
+    """
+    if request.method == 'POST':
+        result = request.form
+        rt_miles_from_commonwealth = request.form.get('rt_miles_from_commonwealth')
+        rt_miles_from_dry_bridge = request.form.get('rt_miles_from_dry_bridge')
+        city = request.form.get('city')
+
+        print('ADD venue operation')
+        try:
+            new_venue = Venue(
+                venue=venue.lower(),
+                rt_miles_from_commonwealth=rt_miles_from_commonwealth,
+                rt_miles_from_dry_bridge=rt_miles_from_dry_bridge,
+                city=city,
+            )
+            db.session.add(new_venue)
+            db.session.commit()
+        except (ValueError, KeyError) as db_error:
+            return render_template("error.html", exception=db_error)
+        else:
+            return render_template("gig_data_input_echo.html", result=result)
+    else:
+        return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
+
+
+@app.route('/venue/update_venue/<venue>/<trip_origin>', methods=['POST', 'GET'])
+def update_venue(venue, trip_origin):
+    """
+    Process form data to update existing venue with missing round-trip mileage
+    :return:
+    """
+    if request.method == 'POST':
+        result = request.form
+        rt_mileage = request.form.get('rt_miles')
+
+        print('***')
+        print('in "update_venue" after ingestion: trip origin: {} - r/t mileage: {}'.format(trip_origin, rt_mileage))
+        print('and venue: {}'.format(venue))
+        print('***')
+
+        print('UPDATE venue operation')
+        if '741 dry bridge' in trip_origin.lower():
+            updating_venue = Venue.query.filter_by(venue=venue.lower()).update(dict(rt_miles_from_dry_bridge=rt_mileage))
+            db.session.commit()
+            return render_template('gig_data_input_echo.html', result=result)
+        elif '2517 commonwealth' in trip_origin.lower():
+            updating_venue = Venue.query.filter_by(venue=venue.lower()).update(dict(rt_miles_from_commonwealth=rt_mileage))
+            db.session.commit()
+            return render_template('gig_data_input_echo.html', result=result)
+        else:
+            print('Unknown Trip Origin: {}'.format(trip_origin))
+            render_template("error.html", exception='Unknown trip origin {} specified!!'.format(trip_origin))
+    else:
+        return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
+
+
 @app.route('/summary')
 @app.route('/summary/')
 def no_input_gigs_error():
@@ -87,7 +240,7 @@ def summary(year, verbose_flag=None):
 
     if verbose:
         try:
-            unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(year)
+            unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(int(year))
         except ValueError as val_err:
             return render_template('error.html', exception=val_err)
     else:
@@ -96,7 +249,8 @@ def summary(year, verbose_flag=None):
 
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
                            unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list,
-                           miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year))
+                           miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year),
+                           self_verbose_url=url_for('summary', year=year, verbose_flag='verbose'))
 
 
 def give_unique_lists_bands_and_venues(year):
@@ -104,7 +258,7 @@ def give_unique_lists_bands_and_venues(year):
     end = date(int(year), 12, 31)
 
     band_list = [gig.band for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
-                 filter(Gig.gig_date <= end)]
+        filter(Gig.gig_date <= end)]
     venue_list = give_miles_per_venue(year)
 
     return set(band_list), venue_list
@@ -117,17 +271,20 @@ def give_miles_per_venue(year):
     :param year: Sting of year in question
     :return: List of strings for publishing in an output table on the website
     """
+
+    # ToDo: The venue distance checks only check that venue is present, NOT that for a given start there is a mileage value
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
 
     venue_list = [(gig.trip_origin, gig.venue) for gig in db.session.query(Gig.trip_origin, Gig.venue)
-                  .order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)]
+        .order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)]
 
     by_venue_tracking_dict = {}
     for origin, gig_venue in venue_list:
         try:
             if origin.lower() == "2517 commonwealth":
-                rt_miles = db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig_venue).first()[0]
+                rt_miles = db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig_venue).first()[
+                    0]
             elif origin.lower() == "741 dry bridge":
                 rt_miles = db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig_venue).first()[0]
             else:
@@ -162,6 +319,7 @@ def annual_gig_pay_miles_summary(year, verbose):
     :param verbose:
     :return: mile_total (float), pay_total(float), n_gigs(int), year(str), unmatched_venues(list of str)
     """
+    # ToDo: some gigs don't get mileage cost - right now handled by no RT data in the 'venue' table
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
     mile_total = 0.0
@@ -172,9 +330,11 @@ def annual_gig_pay_miles_summary(year, verbose):
     for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end):
         try:
             if gig.trip_origin.lower() == "2517 commonwealth":
-                mile_total += db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig.venue).first()[0]
+                mile_total += \
+                db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig.venue).first()[0]
             elif gig.trip_origin.lower() == "741 dry bridge":
-                mile_total += db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig.venue).first()[0]
+                mile_total += db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig.venue).first()[
+                    0]
             else:
                 raise KeyError
         except (KeyError, TypeError):

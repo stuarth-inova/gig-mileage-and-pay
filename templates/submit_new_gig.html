@@ -1,0 +1,16 @@
+{% extends "layout2.html" %}
+{% block title %}Submit Gig{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+  <form action = "/gigs/new_gig_data" method = "POST">
+     <p>Date of gig <input type = "date" name = "date" /></p>
+     <p>Venue <input type = "text" name = "venue" /></p>
+     <p>Band <input type = "text" name = "band" /></p>
+     <p>Pay <input type ="text" name = "pay" /></p>
+     <p>Trip Origin <input type ="text" name = "trip_origin" /></p>
+     <p>Comment <input type ="text" name = "comment" /></p>
+      <p><input type = "submit" value = "Submit" class = "button" /></p>
+  </form>
+{% endblock %}

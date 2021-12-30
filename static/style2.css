@@ -26,6 +26,14 @@ code {
   font-size: 160%
 }
 
+input {
+  color: DarkBlue;
+  font-family: courier;
+  font-size: 80%;
+  background-color: DarkKhaki;
+  border: 1px solid black;
+}
+
 .center {
   display: block;
   margin-left: auto;
@@ -61,4 +69,9 @@ HeaderImage {
 body {
     background: LightSlateGray;
     margin: 100px;
+}
+
+footer {
+    position: fixed;
+    bottom: 0;
 }

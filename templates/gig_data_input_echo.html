@@ -1,0 +1,16 @@
+{% extends "layout2.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+      <table border = 1>
+         {% for key, value in result.items() %}
+            <tr>
+               <th> {{ key }} </th>
+               <td> {{ value }} </td>
+            </tr>
+         {% endfor %}
+      </table>
+      <h4>Gig data successfully input!</h4>
+{% endblock %}
