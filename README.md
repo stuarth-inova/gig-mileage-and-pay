@@ -12,7 +12,11 @@ Also must provide a distances file with round trip distances to the location of 
 Legacy scripts that read .csv files with gigs (usually a year's worth), and a file of round-trip distances. It basically computes pay and mileage for the year, with a few other options.
 
 ## fast flask app
-pipenv shell
-flask run
+* pipenv shell
+* flask run
+
+Hit the local webserver at
+
+[http://localhost:5000/]()
 
 pycharm setup for the repo

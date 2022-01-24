@@ -50,6 +50,13 @@ def hello(name=None):
     return render_template('hello.html', name=name)
 
 
+@app.route('/venue-list')
+def venue_list():
+    raw_venue_list = Venue.query.all()
+    print('venue list is type: {}'.format(type(raw_venue_list)))
+    return render_template('gig_details.html', data_file='2020', gig_dict=raw_venue_list)
+
+
 @app.route('/gigs')
 @app.route('/gigs/')
 def gigs():
