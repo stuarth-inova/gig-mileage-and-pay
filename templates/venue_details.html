@@ -1,0 +1,26 @@
+{% extends "layout2.html" %}
+{% block title %}Detailed List of Venues{% endblock %}
+{% block head %}
+  {{ super() }}
+{% endblock %}
+{% block content %}
+<h3></h3>
+<table class="FancyTable" cellpadding="10px">
+    <tr>
+        <th class="FancyTable">Venue</th>
+        <th class="FancyTable">R/T 2517 Commonwealth</th>
+        <th class="FancyTable">R/T 741 Dry Bridge</th>
+        <th class="FancyTable">City</th>
+    </tr>
+    {% for venue in venue_dict %}
+    <tr>
+        <td class="FancyTable">{{ venue.venue }}</td>
+        <td class="FancyTable">{{ venue.rt_miles_from_commonwealth }}</td>
+        <td class="FancyTable">{{ venue.rt_miles_from_dry_bridge }}</td>
+        <td class="FancyTable">{{ venue.city }}</td>
+
+    </tr>
+    {% endfor %}
+</table>
+
+{% endblock %}
