@@ -52,9 +52,9 @@ def hello(name=None):
 
 @app.route('/venue-list')
 def venue_list():
-    raw_venue_list = Venue.query.all()
-    print('venue list is type: {}'.format(type(raw_venue_list)))
-    return render_template('gig_details.html', data_file='2020', gig_dict=raw_venue_list)
+    raw_venues = Venue.query.order_by(asc(Venue.venue)).all()
+    print('venue list is type: {}'.format(type(raw_venues)))
+    return render_template('venue_details.html', venue_dict=raw_venues)
 
 
 @app.route('/gigs')
@@ -66,7 +66,7 @@ def gigs():
 @app.route('/gigs/<gig_year>')
 def gig_details(gig_year):
     try:
-        return render_template('gig_details.html', data_file=gig_year, gig_dict=db_printable_gig_list(gig_year))
+        return render_template('gig_details.html', gig_year=gig_year, gig_dict=db_printable_gig_list(gig_year))
     except ValueError as val_err:
         return render_template('error.html', exception=val_err)
 
