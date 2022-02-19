@@ -34,6 +34,14 @@ input {
   border: 1px solid black;
 }
 
+select {
+  color: DarkBlue;
+  font-family: courier;
+  font-size: 80%;
+  background-color: DarkKhaki;
+  border: 1px solid black;
+}
+
 .center {
   display: block;
   margin-left: auto;
