@@ -4,7 +4,7 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-<h3></h3>
+<H3></H3>
 <table class="FancyTable" cellpadding="10px">
     <tr>
         <th class="FancyTable">Venue</th>
@@ -13,14 +13,15 @@
         <th class="FancyTable">City</th>
     </tr>
     {% for venue in venue_dict %}
-    <tr>
-        <td class="FancyTable">{{ venue.venue }}</td>
-        <td class="FancyTable">{{ venue.rt_miles_from_commonwealth }}</td>
-        <td class="FancyTable">{{ venue.rt_miles_from_dry_bridge }}</td>
-        <td class="FancyTable">{{ venue.city }}</td>
-
-    </tr>
+        <tr>
+            <td class="FancyTable">{{ venue.venue }}</td>
+            <td class="FancyTable">{{ venue.rt_miles_from_commonwealth }}</td>
+            <td class="FancyTable">{{ venue.rt_miles_from_dry_bridge }}</td>
+            <td class="FancyTable">{{ venue.city }}</td>
+        </tr>
     {% endfor %}
 </table>
-
+{% endblock %}
+{% block footer %}
+  {{ super() }}
 {% endblock %}
