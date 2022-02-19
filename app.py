@@ -52,9 +52,8 @@ def hello(name=None):
 
 @app.route('/venue-list')
 def venue_list():
-    raw_venues = Venue.query.order_by(asc(Venue.venue)).all()
-    print('venue list is type: {}'.format(type(raw_venues)))
-    return render_template('venue_details.html', venue_dict=raw_venues)
+    venues = Venue.query.order_by(asc(Venue.venue)).all()
+    return render_template('venue_details.html', venue_dict=venues)
 
 
 @app.route('/gigs')
@@ -77,7 +76,8 @@ def enter_new_gig():
     Renders a form for entry of gig data
     :return:
     """
-    return render_template('submit_new_gig.html')
+    venues = Venue.query.order_by(asc(Venue.venue)).all()
+    return render_template('submit_new_gig.html', venues_dict=venues)
 
 
 @app.route('/gigs/new_gig_data', methods=['POST', 'GET'])
