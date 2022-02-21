@@ -1,19 +1,46 @@
+* {
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  height: 100%;
+}
+
+body {
+  height:100%;
+  background: LightSlateGray;
+  margin: 75px;
+}
+
+#container {
+  min-height: 100%;
+}
+
+#content {
+  overflow: auto;
+  padding-bottom: 100px;
+}
+
 h1 {
   color: DarkBlue;
   font-family: verdana;
   font-size: 250%;
   text-align: center;
 }
+
 h3 {
   color: DarkBlue;
   font-family: arial;
   font-size: 180%;
 }
+
 h4, ul {
   color: DarkBlue;
   font-family: helvetica;
   font-size: 120%;
 }
+
 p  {
   color: DarkKhaki;
   font-family: courier;
@@ -50,6 +77,8 @@ select {
 }
 
 .FancyTable {
+  padding: 5px;
+  margin: 10px;
   border: 1px solid black;
   font-family: arial;
   color: DarkBlue;
@@ -74,12 +103,9 @@ HeaderImage {
   height: 175px;
 }
 
-body {
-    background: LightSlateGray;
-    margin: 100px;
-}
-
 footer {
-    position: fixed;
-    bottom: 0px;
+    position: relative;
+    height: 100px;
+    margin-top: -100px;
+    clear: both;
 }
