@@ -10,6 +10,7 @@
     <li>'/gigs'</li>
     <li>'/summary/&lt;gig year&gt;'</li>
     <li>'/summary/&lt;gig year&gt;/verbose'</li>
+</ul>
 
     <p>For 'gig year', try 2016, 2018, 2019, etc. Here are some links to years that have data:</p>
     <form method="get" action='/summary/2019'>
@@ -24,7 +25,7 @@
     <form method="get" action='/venue-list'>
         <button id="venueListButton", class="button" >List Current Venues</button>
     </form>
-</ul>
+
 {% endblock %}
 {% block footer %}
   {{ super() }}
