@@ -9,9 +9,12 @@
 <h3>For {{ num_gigs }} gigs: {{ "%0.1f"|format(miles) }} miles; ${{ "%0.2f"|format(pay) }} pay</h3>
 <p>-------------------------------------------------</p>
 
-<form method="get" action='{{ self_verbose_url }}'>
-    <button id="verbose", class="button" >Verbose Summary</button>
-</form>
+{% if verbose is sameas false %}
+  <form method="get" action='{{ self_verbose_url }}'>
+      <button id="verboseButton", class="button" >Verbose Summary</button>
+  </form>
+{% endif %}
+
 <form method="get" action='{{ gigs_url }}'>
         <button id="gigsButton", class="button" >Show Gigs</button>
 </form>
