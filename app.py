@@ -255,7 +255,7 @@ def summary(year, verbose_flag=None):
         miles_per_venue_list = []
 
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
-                           unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list,
+                           unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list, verbose=verbose,
                            miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year),
                            self_verbose_url=url_for('summary', year=year, verbose_flag='verbose'))
 

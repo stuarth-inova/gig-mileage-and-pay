@@ -8,16 +8,16 @@
     {% endblock %}
   </head>
   <body>
-    <div id="content">{% block content %}{% endblock %}</div>
+    <div id="container">
+      <div id="content">{% block content %}{% endblock %}</div>
+    </div>
   </body>
   <footer>
-    <div id="footer">
-      {% block footer %}
-      <form method="get" action='/'>
-        <button id="home", class="button" >Home Page</button>
-      </form>
-      YOLO, JK, BRB, LOL - Jesus
-      {% endblock %}
-    </div>
+    {% block footer %}
+    <form method="get" action='/'>
+      <button id="home", class="button" >Home Page</button>
+    </form>
+    YOLO, JK, BRB, LOL - Jesus
+    {% endblock %}
   </footer>
 </html>
