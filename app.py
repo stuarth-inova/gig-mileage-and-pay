@@ -97,8 +97,7 @@ def submit_new_gig():
 
         existing_venue = Venue.query.filter_by(venue=venue.lower()).first()
         if existing_venue is None:
-            error_message = 'Venue not found in database'
-            return redirect(url_for('add_venue_form', problem_venue=venue, message=error_message))
+            return redirect(url_for('add_venue'))
         else:
             missing_mileage = False
             if '741 dry bridge' in trip_origin.lower():
@@ -142,15 +141,6 @@ def submit_new_gig():
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
 
-@app.route('/venue/add/<problem_venue>/<message>')
-def add_venue_form(problem_venue=None, message=None):
-    """
-    Renders a form for entry of new venue
-    :return:
-    """
-    return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message)
-
-
 @app.route('/venue/update/<problem_venue>/<trip_origin>/<message>')
 def update_venue_mileage(problem_venue, trip_origin, message=None):
     """
@@ -164,14 +154,18 @@ def update_venue_mileage(problem_venue, trip_origin, message=None):
                            venue=problem_venue.lower(), trip_origin=trip_origin)
 
 
-@app.route('/venue/add_venue/<venue>', methods=['POST', 'GET'])
-def add_venue(venue):
+@app.route('/venue/add_venue', methods=['POST', 'GET'])
+def add_venue():
     """
     Process form data to enter new venue
     :return:
     """
+    if request.method == 'GET':
+        return render_template('submit_new_venue.html')
+
     if request.method == 'POST':
         result = request.form
+        venue = request.form.get('venue')
         rt_miles_from_commonwealth = request.form.get('rt_miles_from_commonwealth')
         rt_miles_from_dry_bridge = request.form.get('rt_miles_from_dry_bridge')
         city = request.form.get('city')

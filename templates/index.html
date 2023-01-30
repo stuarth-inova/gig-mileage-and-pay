@@ -13,6 +13,7 @@
     <li>'/summary/&lt;gig year&gt;/verbose'</li>
 </ul>
 
+<h2>Gig Summaries: income and mileage</h2>
     <p>For 'gig year', try 2016, 2018, 2019, etc. Here are some links to years that have data:</p>
     <form method="get" action='/summary/2019'>
         <button id="summary2019Button", class="button" >Summary of 2019 gigs</button>
@@ -23,8 +24,13 @@
     <form method="get" action='/gigs/submit'>
         <button id="gigSubmitForm", class="button" >Input New Gig!</button>
     </form>
+
+<h2>Venue Management</h2>
     <form method="get" action='/venue-list'>
         <button id="venueListButton", class="button" >List Current Venues</button>
+    </form>
+    <form method="get" action='/venue/add_venue'>
+        <button id="newVenueButton", class="button" >Add New Venue</button>
     </form>
 
 {% endblock %}

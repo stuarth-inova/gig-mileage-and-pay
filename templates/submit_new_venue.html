@@ -4,10 +4,9 @@
 {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>Venue Mismatch!!</h1>
-<h3>The venue you specified as your gig location: "{{ problem_venue }}" has this issue: {{ message }}</h3>
-<form action = "/venue/add_venue/{{ problem_venue }}" method = "POST">
-    <p>Venue {{ problem_venue }}</p>
+
+<form action = "/venue/add_venue" method = "POST">
+    <p>Venue <input type="text" name="venue"/></p>
     <p>Round Trip Mileage from 2517 Commonwealth Dr <input type="text" name="rt_miles_from_commonwealth"/></p>
     <p>Round Trip Mileage from 741 Dry Bridge Rd <input type="text" name="rt_miles_from_dry_bridge"/></p>
     <p>City where venue is <input type="text" name="city"/></p>
