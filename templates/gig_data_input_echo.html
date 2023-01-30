@@ -4,13 +4,17 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-      <table border = 1>
-         {% for key, value in result.items() %}
-            <tr>
-               <th> {{ key }} </th>
-               <td> {{ value }} </td>
-            </tr>
-         {% endfor %}
-      </table>
-      <h4>Gig data successfully input!</h4>
+    <table border = 1>
+     {% for key, value in result.items() %}
+        <tr>
+           <th> {{ key }} </th>
+           <td> {{ value }} </td>
+        </tr>
+     {% endfor %}
+    </table>
+
+    <h4>Gig data successfully input!</h4>
+    <form method="get" action='/gigs/submit'>
+        <button id="gigSubmitForm", class="button" >Submit Another Gig</button>
+    </form>
 {% endblock %}

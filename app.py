@@ -183,7 +183,7 @@ def add_venue():
         except (ValueError, KeyError) as db_error:
             return render_template("error.html", exception=db_error)
         else:
-            return render_template("gig_data_input_echo.html", result=result)
+            return render_template("venue_data_input_echo.html", result=result)
     else:
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
 
