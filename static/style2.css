@@ -20,26 +20,32 @@ body {
 h1 {
   color: DarkBlue;
   font-family: verdana;
-  font-size: 250%;
+  font-size: 200%;
   text-align: center;
+}
+
+h2 {
+  color: DarkBlue;
+  font-family: arial;
+  font-size: 160%;
 }
 
 h3 {
   color: DarkBlue;
   font-family: arial;
-  font-size: 180%;
+  font-size: 130%;
 }
 
 h4, ul {
   color: DarkBlue;
   font-family: helvetica;
-  font-size: 120%;
+  font-size: 110%;
 }
 
 p  {
   color: DarkKhaki;
   font-family: courier;
-  font-size: 160%;
+  font-size: 150%;
 }
 
 code {

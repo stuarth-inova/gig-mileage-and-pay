@@ -164,14 +164,18 @@ def update_venue_mileage(problem_venue, trip_origin, message=None):
                            venue=problem_venue.lower(), trip_origin=trip_origin)
 
 
-@app.route('/venue/add_venue/<venue>', methods=['POST', 'GET'])
-def add_venue(venue):
+@app.route('/venue/add_venue', methods=['POST', 'GET'])
+def add_venue():
     """
     Process form data to enter new venue
     :return:
     """
+    if request.method == 'GET':
+        return render_template('submit_new_venue.html')
+
     if request.method == 'POST':
         result = request.form
+        venue = request.form.get('venue')
         rt_miles_from_commonwealth = request.form.get('rt_miles_from_commonwealth')
         rt_miles_from_dry_bridge = request.form.get('rt_miles_from_dry_bridge')
         city = request.form.get('city')
