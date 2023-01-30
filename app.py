@@ -97,8 +97,7 @@ def submit_new_gig():
 
         existing_venue = Venue.query.filter_by(venue=venue.lower()).first()
         if existing_venue is None:
-            error_message = 'Venue not found in database'
-            return redirect(url_for('add_venue_form', problem_venue=venue, message=error_message))
+            return redirect(url_for('add_venue'))
         else:
             missing_mileage = False
             if '741 dry bridge' in trip_origin.lower():
@@ -140,15 +139,6 @@ def submit_new_gig():
                 return render_template("gig_data_input_echo.html", result=result)
     else:
         return render_template('error.html', exception='Improper form submission! Used "GET" on this route.')
-
-
-@app.route('/venue/add/<problem_venue>/<message>')
-def add_venue_form(problem_venue=None, message=None):
-    """
-    Renders a form for entry of new venue
-    :return:
-    """
-    return render_template('submit_new_venue.html', problem_venue=problem_venue, message=message)
 
 
 @app.route('/venue/update/<problem_venue>/<trip_origin>/<message>')
