@@ -25,3 +25,4 @@ pycharm setup for the repo
 * Allow users to selectively update gig mileage values for venues
 * Edit gig details
 * Display gig start values
+* Validate gig submission uniqueness constraint

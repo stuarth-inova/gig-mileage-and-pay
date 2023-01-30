@@ -1,0 +1,23 @@
+{% extends "layout2.html" %}
+{% block title %}Index{% endblock %}
+{% block head %}
+{{ super() }}
+{% endblock %}
+{% block content %}
+<table border = 1>
+    {% for key, value in result.items() %}
+    <tr>
+        <th> {{ key }} </th>
+        <td> {{ value }} </td>
+    </tr>
+    {% endfor %}
+</table>
+
+<h4>Venue successfully added!</h4>
+<form method="get" action='/gigs/submit'>
+    <button id="gigSubmitForm", class="button" >Submit A Gig</button>
+</form>
+<form method="get" action='/venue/add_venue'>
+    <button id="newVenueButton", class="button" >Add Another New Venue</button>
+</form>
+{% endblock %}
