@@ -20,3 +20,8 @@ Hit the local webserver at
 [http://localhost:5000/]()
 
 pycharm setup for the repo
+
+## To Do
+* Allow users to selectively update gig mileage values for venues
+* Edit gig details
+* Display gig start values
