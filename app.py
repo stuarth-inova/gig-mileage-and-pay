@@ -66,7 +66,6 @@ def unique_year_list():
     years = []
     for gig_date in db.session.query(Gig.gig_date):
         years.append(gig_date[0].year)
-    years.sort()
     unique_years = sorted(set(years))
     return unique_years
 
