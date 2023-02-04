@@ -35,7 +35,7 @@
 <table class="FancyTable" cellpadding="30px">
   <tr>
       <td width="50%" class="FancyTable">
-            <h4>Unique set of venues from {{ data_file }}, with total round-trip miles to that venue</h4>
+            <h4>Unique set of venues from {{ year }}, with total round-trip miles to that venue</h4>
             <ul>
                 {% for k in miles_per_venue_list %}
                 <li>{{k}}</li>
@@ -43,14 +43,24 @@
             </ul>
       </td>
 
+      {% if pay_per_band %}
       <td width="50%" class="FancyTable">
-            <h4>Unique set of bands from {{ data_file }} is:</h4>
-            <ul>
-                {% for p in unique_band_list %}
-                <li>{{p}}</li>
-                {% endfor %}
-            </ul>
+          <h4>Total pay from each Band in {{ year }}</h4>
+          <table class="FancyTable" cellpadding="10px">
+              <tr>
+                  <th class="FancyTable">Band</th>
+                  <th class="FancyTable">Total Pay for {{ year }}</th>
+              </tr>
+
+              {% for band in pay_per_band %}
+              <tr>
+                  <td class="FancyTable" cellpadding="10px">{{ band.0 }}</td>
+                  <td class="FancyTable" cellpadding="10px">${{ "%0.2f"|format(band.1) }}</td>
+              </tr>
+              {% endfor %}
+          </table>
       </td>
+      {% endif %}
   </tr>
 </table>
 {% endif %}

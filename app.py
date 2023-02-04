@@ -257,14 +257,42 @@ def summary(year, verbose_flag=None):
             unique_band_list, miles_per_venue_list = give_unique_lists_bands_and_venues(int(year))
         except ValueError as val_err:
             return render_template('error.html', exception=val_err)
+
+        annual_pay_by_band = calculate_annual_pay_by_band(year)
     else:
         unique_band_list = []
         miles_per_venue_list = []
+        annual_pay_by_band = []
 
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, year=print_year,
                            unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list, verbose=verbose,
                            miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year),
-                           self_verbose_url=url_for('summary', year=year, verbose_flag='verbose'))
+                           self_verbose_url=url_for('summary', year=year, verbose_flag='verbose'),
+                           pay_per_band=annual_pay_by_band)
+
+
+def calculate_annual_pay_by_band(year):
+    start = date(int(year), 1, 1)
+    end = date(int(year), 12, 31)
+
+    band_pay_list = [(gig.band, gig.pay) for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
+        filter(Gig.gig_date <= end)]
+
+    collated_band_pay_dict = {}
+
+    for band, pay in band_pay_list:
+        # print("Band: {} - Pay: {}".format(band, pay))
+        if band in collated_band_pay_dict.keys():
+            collated_band_pay_dict[band] += pay
+        else:
+            collated_band_pay_dict.update({band: pay})
+
+    collated_band_pay_list = []
+    for band in sorted(collated_band_pay_dict.keys()):
+        print("Band: {} - Total Pay: {}".format(band, collated_band_pay_dict[band]))
+        collated_band_pay_list.append((band, collated_band_pay_dict[band]))
+
+    return collated_band_pay_list
 
 
 def give_unique_lists_bands_and_venues(year):
@@ -273,9 +301,9 @@ def give_unique_lists_bands_and_venues(year):
 
     band_list = [gig.band for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
                  filter(Gig.gig_date <= end)]
-    venue_list = give_miles_per_venue(year)
+    venue_list_year = give_miles_per_venue(year)
 
-    return set(band_list), venue_list
+    return set(band_list), venue_list_year
 
 
 def give_miles_per_venue(year):
