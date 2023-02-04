@@ -39,8 +39,10 @@ class Venue(db.Model):
 
 
 @app.route('/')
+@app.route('/home')
+@app.route('/index')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', unique_years=unique_year_list())
 
 
 @app.route('/hello')
@@ -58,8 +60,9 @@ def venue_list():
 
 @app.route('/gigs')
 @app.route('/gigs/')
+@app.route('/gig')
 def gigs():
-    return render_template('gigs.html', unique_years=unique_year_list())
+    return redirect("/", code=302)
 
 
 def unique_year_list():
@@ -247,7 +250,7 @@ def summary(year, verbose_flag=None):
     else:
         verbose = False
 
-    miles_sum, pay_sum, num_gigs, gig_data_file, venues_unmatched = annual_gig_pay_miles_summary(year, verbose)
+    miles_sum, pay_sum, num_gigs, print_year, venues_unmatched = annual_gig_pay_miles_summary(year, verbose)
 
     if verbose:
         try:
@@ -258,7 +261,7 @@ def summary(year, verbose_flag=None):
         unique_band_list = []
         miles_per_venue_list = []
 
-    return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, data_file=gig_data_file,
+    return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, year=print_year,
                            unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list, verbose=verbose,
                            miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year),
                            self_verbose_url=url_for('summary', year=year, verbose_flag='verbose'))
