@@ -59,30 +59,22 @@ def venue_list():
 @app.route('/gigs')
 @app.route('/gigs/')
 def gigs():
-    return render_template('gigs.html')
+    return render_template('gigs.html', unique_years=unique_year_list())
+
+
+def unique_year_list():
+    years = []
+    for gig_date in db.session.query(Gig.gig_date):
+        years.append(gig_date[0].year)
+    years.sort()
+    unique_years = sorted(set(years))
+    return unique_years
 
 
 @app.route('/gigs/<gig_year>')
 def gig_details(gig_year):
     try:
         return render_template('gig_details.html', gig_year=gig_year, gig_dict=db_printable_gig_list(gig_year))
-    except ValueError as val_err:
-        return render_template('error.html', exception=val_err)
-
-
-@app.route('/test/year-lister')
-def test_year_lister():
-    years = []
-    for gig_date in db.session.query(Gig.gig_date):
-        years.append(gig_date[0].year)
-    years.sort()
-    unique_years = sorted(set(years))
-
-    for year in unique_years:
-        print(year)
-
-    try:
-        return render_template('year_list.html', unique_years=unique_years)
     except ValueError as val_err:
         return render_template('error.html', exception=val_err)
 
