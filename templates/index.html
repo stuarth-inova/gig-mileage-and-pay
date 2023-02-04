@@ -9,26 +9,26 @@
     <table class="FancyTable" cellpadding="10px">
         <tr>
             <th class="FancyTable">Year</th>
-            <th class="FancyTable">List Gigs</th>
-            <th class="FancyTable">Pay and Mileage Summary</th>
+            <th class="FancyTable">Number of Gigs</th>
+            <th class="FancyTable">Total Mileage</th>
+            <th class="FancyTable">Income</th>
+            <th class="FancyTable">Gig List</th>
             <th class="FancyTable">Verbose Summary</th>
         </tr>
         {% for year in unique_years %}
         <tr>
-            <td class="FancyTable"><br><br>{{ year }}</td>
+            <td class="FancyTable"><br><br>{{ year.0 }}</td>
+            <td class="FancyTable"><br><br>{{ year.1 }}</td>
+            <td class="FancyTable"><br><br>{{ "%0.1f"|format(year.2) }}</td>
+            <td class="FancyTable"><br><br>${{ "%0.2f"|format(year.3) }}</td>
             <td class="FancyTable">
-                <form method="get" action='/gigs/{{ year }}'>
-                    <button id="gigs{{ year }}Button", class="button" >Gigs in {{ year }}</button>
+                <form method="get" action='/gigs/{{ year.0 }}'>
+                    <button id="gigs{{ year }}Button", class="button" >Gigs in {{ year.0 }}</button>
                 </form>
             </td>
             <td class="FancyTable">
-                <form method="get" action='/summary/{{ year }}'>
-                    <button id="summary{{ year }}Button", class="button" >Summary for {{ year }}</button>
-                </form>
-            </td>
-            <td class="FancyTable">
-                <form method="get" action='/summary/{{ year }}/verbose'>
-                    <button id="summaryVerbose{{ year }}Button", class="button" >Verbose for {{ year }}</button>
+                <form method="get" action='/summary/{{ year.0 }}/verbose'>
+                    <button id="summaryVerbose{{ year }}Button", class="button" >Verbose information for {{ year.0 }}</button>
                 </form>
             </td>
         </tr>
