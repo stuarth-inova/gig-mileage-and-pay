@@ -59,7 +59,15 @@ def venue_list():
 @app.route('/gigs')
 @app.route('/gigs/')
 def gigs():
-    return render_template('gigs.html')
+    return render_template('gigs.html', unique_years=unique_year_list())
+
+
+def unique_year_list():
+    years = []
+    for gig_date in db.session.query(Gig.gig_date):
+        years.append(gig_date[0].year)
+    unique_years = sorted(set(years))
+    return unique_years
 
 
 @app.route('/gigs/<gig_year>')
@@ -193,6 +201,8 @@ def update_venue(venue, trip_origin):
     """
     Process form data to update existing venue with missing round-trip mileage
     :return:
+
+    ToDo: what is this doing? looks like its not hooked up to anything
     """
     if request.method == 'POST':
         result = request.form
