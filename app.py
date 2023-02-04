@@ -39,8 +39,10 @@ class Venue(db.Model):
 
 
 @app.route('/')
+@app.route('/home')
+@app.route('/index')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', unique_years=unique_year_list())
 
 
 @app.route('/hello')
@@ -58,8 +60,9 @@ def venue_list():
 
 @app.route('/gigs')
 @app.route('/gigs/')
+@app.route('/gig')
 def gigs():
-    return render_template('gigs.html', unique_years=unique_year_list())
+    return redirect("/", code=302)
 
 
 def unique_year_list():

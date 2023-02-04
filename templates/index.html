@@ -4,28 +4,38 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>Index</h1>
-<p>Try appending routes to the host in the URL like:</p>
-<ul>
-    <li>'/gigs'</li>
-    <li>'/gigs/&lt;gig year&gt;'</li>
-    <li>'/summary/&lt;gig year&gt;'</li>
-    <li>'/summary/&lt;gig year&gt;/verbose'</li>
-</ul>
-
-<h2>Gig Summaries: income and mileage</h2>
-    <p>For 'gig year', try 2016, 2018, 2019, etc. Here are some links to years that have data:</p>
-    <form method="get" action='/summary/2019'>
-        <button id="summary2019Button", class="button" >Summary of 2019 gigs</button>
-    </form>
-    <form method="get" action='/gigs/2019'>
-        <button id="gigs2019Button", class="button" >Show 2019 gigs</button>
-    </form>
+<h1>Home</h1>
+<h2>Gigs</h2>
+    <table class="FancyTable" cellpadding="10px">
+        <tr>
+            <th class="FancyTable">Year</th>
+            <th class="FancyTable">List Gigs</th>
+            <th class="FancyTable">Pay and Mileage Summary</th>
+            <th class="FancyTable">Verbose Summary</th>
+        </tr>
+        {% for year in unique_years %}
+        <tr>
+            <td class="FancyTable"><br><br>{{ year }}</td>
+            <td class="FancyTable">
+                <form method="get" action='/gigs/{{ year }}'>
+                    <button id="gigs{{ year }}Button", class="button" >Gigs in {{ year }}</button>
+                </form>
+            </td>
+            <td class="FancyTable">
+                <form method="get" action='/summary/{{ year }}'>
+                    <button id="summary{{ year }}Button", class="button" >Summary for {{ year }}</button>
+                </form>
+            </td>
+            <td class="FancyTable">
+                <form method="get" action='/summary/{{ year }}/verbose'>
+                    <button id="summaryVerbose{{ year }}Button", class="button" >Verbose for {{ year }}</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
     <form method="get" action='/gigs/submit'>
         <button id="gigSubmitForm", class="button" >Input New Gig!</button>
-    </form>
-    <form method="get" action='/gigs'>
-        <button id="gigsListButton", class="button" >Gigs</button>
     </form>
 
 <h2>Venue Management</h2>
