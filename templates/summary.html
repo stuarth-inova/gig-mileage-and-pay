@@ -4,10 +4,22 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
-<h1>*** Gigs from {{ data_file }} ***</h1>
+<h1>*** Gigs from {{ year }} ***</h1>
 <p>-------------------------------------------------</p>
 <h3>For {{ num_gigs }} gigs: {{ "%0.1f"|format(miles) }} miles; ${{ "%0.2f"|format(pay) }} pay</h3>
 <p>-------------------------------------------------</p>
+
+<h2>For {{ num_gigs }} gigs in {{ year }}</h2>
+<table class="FancyTable" cellpadding="10px">
+    <tr>
+        <th class="FancyTable">Total Miles</th>
+        <th class="FancyTable">Total Income</th>
+    </tr>
+    <tr>
+        <td class="FancyTable"><b></b><em>{{ "%0.1f"|format(miles) }}</em></b></td>
+        <td class="FancyTable"><b></b><em>${{ "%0.2f"|format(pay) }}</em></b></td>
+    </tr>
+</table>
 
 {% if verbose is sameas false %}
   <form method="get" action='{{ self_verbose_url }}'>
