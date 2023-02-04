@@ -70,6 +70,23 @@ def gig_details(gig_year):
         return render_template('error.html', exception=val_err)
 
 
+@app.route('/test/year-lister')
+def test_year_lister():
+    years = []
+    for gig_date in db.session.query(Gig.gig_date):
+        years.append(gig_date[0].year)
+    years.sort()
+    unique_years = sorted(set(years))
+
+    for year in unique_years:
+        print(year)
+
+    try:
+        return render_template('year_list.html', unique_years=unique_years)
+    except ValueError as val_err:
+        return render_template('error.html', exception=val_err)
+
+
 @app.route('/gigs/submit')
 def enter_new_gig():
     """
@@ -193,6 +210,8 @@ def update_venue(venue, trip_origin):
     """
     Process form data to update existing venue with missing round-trip mileage
     :return:
+
+    ToDo: what is this doing? looks like its not hooked up to anything
     """
     if request.method == 'POST':
         result = request.form
