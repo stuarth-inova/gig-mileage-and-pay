@@ -42,7 +42,15 @@ class Venue(db.Model):
 @app.route('/home')
 @app.route('/index')
 def index():
-    return render_template('index.html', unique_years=unique_year_list())
+    year_list = unique_year_list()
+    summaries = []
+
+    verbose = False
+    for year in year_list:
+        miles_sum, pay_sum, num_gigs, print_year, venues_unmatched = annual_gig_pay_miles_summary(year, verbose)
+        summaries.append((year, num_gigs, miles_sum, pay_sum))
+
+    return render_template('index.html', unique_years=summaries)
 
 
 @app.route('/hello')
