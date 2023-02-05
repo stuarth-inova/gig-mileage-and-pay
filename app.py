@@ -266,28 +266,34 @@ def summary(year, verbose_flag=None):
         except ValueError as val_err:
             return render_template('error.html', exception=val_err)
 
-        annual_pay_by_band = calculate_annual_pay_by_band(year)
+        annual_band_stats = calculate_annual_by_band(year)
     else:
         unique_band_list = []
         miles_per_venue_list = []
-        annual_pay_by_band = []
+        annual_band_stats = []
 
     return render_template('summary.html', num_gigs=num_gigs, miles=miles_sum, pay=pay_sum, year=print_year,
                            unmatched_venue_list=venues_unmatched, unique_band_list=unique_band_list, verbose=verbose,
                            miles_per_venue_list=miles_per_venue_list, gigs_url=url_for('gig_details', gig_year=year),
                            self_verbose_url=url_for('summary', year=year, verbose_flag='verbose'),
-                           pay_per_band=annual_pay_by_band)
+                           per_band_stats=annual_band_stats)
 
 
-def calculate_annual_pay_by_band(year):
+def calculate_annual_by_band(year):
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
 
-    band_pay_list = [(gig.band, gig.pay) for gig in Gig.query.order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).
+    band_master_list = [(gig.band, gig.pay, gig.trip_origin, gig.venue) for gig in Gig.query.order_by(asc(Gig.gig_date)).
+        filter(Gig.gig_date >= start).
         filter(Gig.gig_date <= end)]
 
-    collated_band_pay_dict = {}
+    band_pay_list = []
+    band_miles_list = []
+    for gig in band_master_list:
+        band_pay_list.append((gig[0], gig[1]))
+        band_miles_list.append((gig[0], gig[2], gig[3]))
 
+    collated_band_pay_dict = {}
     for band, pay in band_pay_list:
         # print("Band: {} - Pay: {}".format(band, pay))
         if band in collated_band_pay_dict.keys():
@@ -295,12 +301,42 @@ def calculate_annual_pay_by_band(year):
         else:
             collated_band_pay_dict.update({band: pay})
 
-    collated_band_pay_list = []
-    for band in sorted(collated_band_pay_dict.keys()):
-        print("Band: {} - Total Pay: {}".format(band, collated_band_pay_dict[band]))
-        collated_band_pay_list.append((band, collated_band_pay_dict[band]))
+    collated_band_venues_dict = {}
+    for band, origin, venue in band_miles_list:
+        if band in collated_band_venues_dict.keys():
+            collated_band_venues_dict[band].append((origin, venue))
+        else:
+            collated_band_venues_dict.update({band: [(origin, venue)]})
 
-    return collated_band_pay_list
+    collated_band_miles_dict = {}
+    for band in sorted(collated_band_venues_dict.keys()):
+        collated_band_miles_dict[band] = simple_sum_gig_mileage(collated_band_venues_dict[band])
+
+    collated_band_stats_list = []
+    for band in sorted(collated_band_pay_dict.keys()):
+        # print("Band: {} - Total Pay: {}".format(band, collated_band_pay_dict[band]))
+        collated_band_stats_list.append((band, collated_band_pay_dict[band], collated_band_miles_dict[band]))
+
+    return collated_band_stats_list
+
+
+def simple_sum_gig_mileage(input_list):
+    sum_mileage = 0
+    for origin, gig_venue in input_list:
+        try:
+            if origin.lower() == "2517 commonwealth":
+                rt_miles = db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig_venue).first()[
+                    0]
+            elif origin.lower() == "741 dry bridge":
+                rt_miles = db.session.query(Venue.rt_miles_from_dry_bridge).filter(Venue.venue == gig_venue).first()[0]
+            else:
+                print("Origin key didn't match!!")
+                raise KeyError
+        except(KeyError, TypeError) as err:
+            print('Raised error matching origin mileage: {}'.format(err))
+        else:
+            sum_mileage += rt_miles
+    return sum_mileage
 
 
 def give_unique_lists_bands_and_venues(year):
@@ -322,15 +358,29 @@ def give_miles_per_venue(year):
     :return: List of strings for publishing in an output table on the website
     """
 
-    # ToDo: The venue distance checks only check that venue is present, NOT that for a given start there is a mileage value
+    # ToDo: The venue distance checks only check that venue exists, NOT that for a given start there is a mileage value
     start = date(int(year), 1, 1)
     end = date(int(year), 12, 31)
 
-    venue_list = [(gig.trip_origin, gig.venue) for gig in db.session.query(Gig.trip_origin, Gig.venue)
+    gig_venue_list = [(gig.trip_origin, gig.venue) for gig in db.session.query(Gig.trip_origin, Gig.venue)
         .order_by(asc(Gig.gig_date)).filter(Gig.gig_date >= start).filter(Gig.gig_date <= end)]
 
-    by_venue_tracking_dict = {}
-    for origin, gig_venue in venue_list:
+    by_venue_tracking_dict = accumulate_gig_mileage_by_venue(gig_venue_list)
+
+    miles_per_venue_list = []
+    for venue in by_venue_tracking_dict:
+        if by_venue_tracking_dict[venue] == 'Not matched for mileage':
+            miles_per_venue_list.append('{: <20}  - Not matched for mileage'.format(venue))
+        else:
+            miles_per_venue_list.append('{: <20}  - Cumulative r/t mileage: {:0.1f}'.
+                                        format(venue, by_venue_tracking_dict[venue]))
+
+    return miles_per_venue_list
+
+
+def accumulate_gig_mileage_by_venue(input_gig_list):
+    by_venue_dict = {}
+    for origin, gig_venue in input_gig_list:
         try:
             if origin.lower() == "2517 commonwealth":
                 rt_miles = db.session.query(Venue.rt_miles_from_commonwealth).filter(Venue.venue == gig_venue).first()[
@@ -342,24 +392,15 @@ def give_miles_per_venue(year):
                 raise KeyError
         except (KeyError, TypeError):
             # print('Mileage not tracked for venue {}'.format(venue))
-            if gig_venue not in by_venue_tracking_dict.keys():
-                by_venue_tracking_dict.update({gig_venue: 'Not matched for mileage'})
+            if gig_venue not in by_venue_dict.keys():
+                by_venue_dict.update({gig_venue: 'Not matched for mileage'})
         else:
-            if gig_venue in by_venue_tracking_dict.keys():
-                by_venue_tracking_dict[gig_venue] += rt_miles
+            if gig_venue in by_venue_dict.keys():
+                by_venue_dict[gig_venue] += rt_miles
             else:
-                by_venue_tracking_dict.update({gig_venue: rt_miles})
+                by_venue_dict.update({gig_venue: rt_miles})
             # print('Cumulative distance for {} is {:0.1f} miles r/t'.format(venue, by_venue_tracking_dict[venue]))
-
-    miles_per_venue_list = []
-    for venue in by_venue_tracking_dict:
-        if by_venue_tracking_dict[venue] == 'Not matched for mileage':
-            miles_per_venue_list.append('{: <20}  - Not matched for mileage'.format(venue))
-        else:
-            miles_per_venue_list.append('{: <20}  - Cumulative r/t mileage: {:0.1f}'.
-                                        format(venue, by_venue_tracking_dict[venue]))
-
-    return miles_per_venue_list
+    return by_venue_dict
 
 
 def annual_gig_pay_miles_summary(year, verbose):
