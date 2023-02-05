@@ -43,14 +43,26 @@
             </ul>
       </td>
 
+      {% if per_band_stats %}
       <td width="50%" class="FancyTable">
-            <h4>Unique set of bands from {{ year }} is:</h4>
-            <ul>
-                {% for p in unique_band_list %}
-                <li>{{p}}</li>
-                {% endfor %}
-            </ul>
+          <h4>Total pay from each Band in {{ year }}</h4>
+          <table class="FancyTable" cellpadding="10px">
+              <tr>
+                  <th class="FancyTable" cellpadding="10px">Band</th>
+                  <th class="FancyTable" cellpadding="10px">Total Pay for {{ year }}</th>
+                  <th class="FancyTable" cellpadding="10px">Total Mileage for {{ year }}</th>
+              </tr>
+
+              {% for band in per_band_stats %}
+              <tr>
+                  <td class="FancyTable" cellpadding="10px">{{ band.0 }}</td>
+                  <td class="FancyTable" cellpadding="10px">${{ "%0.2f"|format(band.1) }}</td>
+                  <td class="FancyTable" cellpadding="10px">{{ "%0.1f"|format(band.2) }}</td>
+              </tr>
+              {% endfor %}
+          </table>
       </td>
+      {% endif %}
   </tr>
 </table>
 {% endif %}
