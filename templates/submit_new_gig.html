@@ -4,6 +4,12 @@
   {{ super() }}
 {% endblock %}
 {% block content %}
+
+  {% if error_message %}
+  <p>{{ error_message }}</p>
+  <p><hr></p>
+  {% endif %}
+
   <form action = "/gigs/new_gig_data" method = "POST">
     <p>Date of gig <input type = "date" name = "date" /></p>
     <p>Venue <select name = "venue" >
