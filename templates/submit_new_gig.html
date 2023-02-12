@@ -6,8 +6,8 @@
 {% block content %}
 
   {% if error_message %}
-  <p>{{ error_message }}</p>
-  <p><hr></p>
+    <h2><b>{{ error_message }}</b></h2>
+    <p><hr></p>
   {% endif %}
 
   <form action = "/gigs/new_gig_data" method = "POST">
