@@ -90,13 +90,14 @@ def gig_details(gig_year):
 
 
 @app.route('/gigs/submit')
-def enter_new_gig():
+@app.route('/gigs/submit/<error_message>')
+def enter_new_gig(error_message=None):
     """
     Renders a form for entry of gig data
     :return:
     """
     venues = Venue.query.order_by(asc(Venue.venue)).all()
-    return render_template('submit_new_gig.html', venues_dict=venues)
+    return render_template('submit_new_gig.html', venues_dict=venues, error_message=error_message)
 
 
 @app.route('/gigs/new_gig_data', methods=['POST', 'GET'])
@@ -113,6 +114,25 @@ def submit_new_gig():
         pay = request.form.get('pay')
         trip_origin = request.form.get('trip_origin')
         comment = request.form.get('comment')
+
+        if not pay:
+            error_message = 'Pay amount not entered'
+            return redirect(url_for('enter_new_gig', error_message=error_message))
+
+        if not band:
+            error_message = 'No band in submission'
+            return redirect(url_for('enter_new_gig', error_message=error_message))
+
+        if not gig_date:
+            error_message = 'No date entered'
+            return redirect(url_for('enter_new_gig', error_message=error_message))
+
+        check_duplicate = [(gig.gig_date, gig.venue, gig.band) for gig in db.session.query(
+            Gig.gig_date, Gig.venue, Gig.band)
+            .filter(Gig.gig_date == date.fromisoformat(gig_date)).filter(Gig.venue == venue).filter(Gig.band == band)]
+        if len(check_duplicate) > 0:
+            error_message = 'That gig has already been entered!'
+            return redirect(url_for('enter_new_gig', error_message=error_message))
 
         existing_venue = Venue.query.filter_by(venue=venue.lower()).first()
         if existing_venue is None:
