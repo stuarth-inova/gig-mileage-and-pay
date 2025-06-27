@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from flask import Flask, escape, url_for, render_template, request, redirect
+from flask import Flask, url_for, render_template, request, redirect
+from markupsafe import escape
 import calc_miles_and_pay
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc
