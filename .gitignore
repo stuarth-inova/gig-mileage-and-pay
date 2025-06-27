@@ -20,3 +20,8 @@
 */.idea
 *.xml
 *.iml
+
+# raw data files
+*/raw-data/*
+*/legacy-data
+
