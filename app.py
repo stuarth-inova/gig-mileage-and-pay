@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 
+import os
 from flask import Flask, url_for, render_template, request, redirect
 from markupsafe import escape
 import calc_miles_and_pay
@@ -9,8 +10,10 @@ from sqlalchemy import desc
 from datetime import date
 import re
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/stuartholme/gig-mileage-and-pay/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'test.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -37,6 +40,9 @@ class Venue(db.Model):
 
     def __repr__(self):
         return '<Venue %r>' % self.venue
+
+
+db.create_all()
 
 
 @app.route('/')

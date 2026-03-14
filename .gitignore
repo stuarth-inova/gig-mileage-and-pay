@@ -20,3 +20,9 @@
 */.idea
 *.xml
 *.iml
+
+GigLog_excel/*
+
+# IDE files
+.vscode/*
+.DS_Store
