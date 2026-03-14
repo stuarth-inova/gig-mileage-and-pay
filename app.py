@@ -213,7 +213,9 @@ def add_venue():
         result = request.form
         venue = request.form.get('venue')
         rt_miles_from_commonwealth = request.form.get('rt_miles_from_commonwealth')
+        rt_miles_from_commonwealth = float(rt_miles_from_commonwealth) if rt_miles_from_commonwealth else None
         rt_miles_from_dry_bridge = request.form.get('rt_miles_from_dry_bridge')
+        rt_miles_from_dry_bridge = float(rt_miles_from_dry_bridge) if rt_miles_from_dry_bridge else None
         city = request.form.get('city')
 
         print('ADD venue operation')

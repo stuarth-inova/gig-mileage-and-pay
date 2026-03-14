@@ -10,6 +10,19 @@ from calc_miles_and_pay import process_distances_input_csv
 
 BASEDIR = os.path.abspath(os.path.dirname(__file__))
 
+QUOTE_REPLACEMENTS = {
+    '\u2019': "'",  # right single quotation mark
+    '\u2018': "'",  # left single quotation mark
+    '\u201c': '"',  # left double quotation mark
+    '\u201d': '"',  # right double quotation mark
+}
+
+
+def normalize_quotes(text):
+    for fancy, plain in QUOTE_REPLACEMENTS.items():
+        text = text.replace(fancy, plain)
+    return text
+
 
 db.create_all()
 
@@ -66,7 +79,7 @@ def populate_gig_data_from_giglog(csv_path, year):
             if not band:
                 continue
 
-            venue = row.get('Venue', '').strip().lower()
+            venue = normalize_quotes(row.get('Venue', '')).strip().lower()
             pay_str = row.get('Pay', '0').strip().lstrip('$').replace(',', '')
             try:
                 pay = float(pay_str) if pay_str else 0.0
@@ -115,7 +128,7 @@ def populate_gig_data_2025(csv_path):
             if not band:
                 continue
 
-            venue = row.get('Venue', '').strip().lower()
+            venue = normalize_quotes(row.get('Venue', '')).strip().lower()
             pay_str = row.get('Pay', '0').strip().lstrip('$').replace(',', '')
             try:
                 pay = float(pay_str) if pay_str else 0.0
@@ -133,7 +146,7 @@ def populate_gig_data_2025(csv_path):
             if not trip_origin:
                 trip_origin = '741 dry bridge'
 
-            comment = row.get('comment', '').strip() or None
+            comment = normalize_quotes(row.get('comment', '')).strip() or None
 
             if gig_exists(gig_date, venue, band):
                 skipped += 1
@@ -145,6 +158,62 @@ def populate_gig_data_2025(csv_path):
                 venue=venue,
                 pay=pay,
                 trip_origin=trip_origin,
+                comment=comment,
+            )
+            db.session.add(new_gig)
+            db.session.commit()
+            added += 1
+        print('{}: {} gigs added, {} skipped (duplicates)'.format(csv_path, added, skipped))
+
+
+def populate_gig_data_2014(csv_path):
+    """Import gigs from the 2014-format CSV with real MM/DD/YY dates.
+
+    Expected columns: Band, Venue, Date, Pay, R_T_Miles, [comment]
+    The trailing comma in the header creates an empty 6th column which
+    occasionally contains a comment.
+    """
+    with open(csv_path, 'r') as f:
+        reader = csv.reader(f)
+        headers = next(reader)
+        added = 0
+        skipped = 0
+        for row in reader:
+            if len(row) < 5:
+                continue
+            band = normalize_quotes(row[0]).strip()
+            if not band:
+                continue
+
+            venue = normalize_quotes(row[1]).strip().lower()
+
+            date_str = row[2].strip()
+            try:
+                gig_date = datetime.strptime(date_str, '%m/%d/%y').date()
+            except ValueError:
+                print('  Skipping row with unparseable date: "{}"'.format(date_str))
+                continue
+
+            pay_str = row[3].strip().lstrip('$').replace(',', '')
+            try:
+                pay = float(pay_str) if pay_str else 0.0
+            except ValueError:
+                pay = 0.0
+
+            comment = None
+            if len(row) > 5 and row[5].strip():
+                comment = normalize_quotes(row[5]).strip()
+
+            if gig_exists(gig_date, venue, band):
+                skipped += 1
+                continue
+
+            new_gig = Gig(
+                gig_date=gig_date,
+                band=band,
+                venue=venue,
+                pay=pay,
+                trip_origin='2517 commonwealth',
                 comment=comment,
             )
             db.session.add(new_gig)
@@ -166,6 +235,11 @@ def load_all_data():
     gig_2012_csv = os.path.join(BASEDIR, 'GigLog_excel', '2012-Table 1.csv')
     print('Loading 2012 gig data...')
     populate_gig_data_from_giglog(gig_2012_csv, 2012)
+
+    # 2014 gig data (real MM/DD/YY dates)
+    gig_2014_csv = os.path.join(BASEDIR, 'GigLog_excel', 'gigs_2014.csv')
+    print('Loading 2014 gig data...')
+    populate_gig_data_2014(gig_2014_csv)
 
     # 2025 gig data (real dates)
     gig_2025_csv = os.path.join(BASEDIR, 'GigLog_excel', 'gigs_2025.csv')
