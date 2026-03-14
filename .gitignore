@@ -15,6 +15,7 @@
 *.sql
 *.csv
 *.db
+*.db.backup*
 
 # IDE files
 */.idea
