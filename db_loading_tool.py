@@ -13,23 +13,27 @@ db.create_all()
 
 def populate_venue_distance_data(venue_dict):
     for venue in venue_dict:
+        # Check if the venue already exists
+        existing_venue = Venue.query.filter_by(venue=venue).first()
+        if existing_venue:
+            continue  # Skip if already in the database
+
         try:
             rt_commonwealth_corrected = float(venue_dict[venue]['round_trip_commonwealth'])
-        except ValueError as ve:
-            rt_commonwealth_corrected = None
-        except TypeError as te:
+        except (ValueError, TypeError):
             rt_commonwealth_corrected = None
 
         try:
             rt_dry_bridge_corrected = float(venue_dict[venue]['round_trip_dry_br'])
-        except ValueError as ve:
-            rt_dry_bridge_corrected = None
-        except TypeError as te:
+        except (ValueError, TypeError):
             rt_dry_bridge_corrected = None
 
-        add_venue = Venue(venue=venue, rt_miles_from_commonwealth=rt_commonwealth_corrected,
-                          rt_miles_from_dry_bridge=rt_dry_bridge_corrected,
-                          city=venue_dict[venue]['city'])
+        add_venue = Venue(
+            venue=venue,
+            rt_miles_from_commonwealth=rt_commonwealth_corrected,
+            rt_miles_from_dry_bridge=rt_dry_bridge_corrected,
+            city=venue_dict[venue]['city']
+        )
 
         db.session.add(add_venue)
         db.session.commit()
@@ -78,29 +82,28 @@ def populate_gig_data(gigs_dict):
         db.session.commit()
 
 
-# distances = process_distances_input_csv('distances.csv')
-# distances_dict = distances.return_venue_dictionary()
-#
-# populate_venue_distance_data(distances_dict)
+distances = process_distances_input_csv('legacy-data/distances.csv')
+distances_dict = distances.return_venue_dictionary()
+populate_venue_distance_data(distances_dict)
 
 # distances.print_out_mileage_list()
 # populate_trial_fake_gig_data()
 
-# gigs_object = process_gig_input_csv('gigs_2018.csv')
-# gigs_dictionary = gigs_object.return_gigs_dictionary()
-# populate_gig_data(gigs_dictionary)
-#
-# gigs_object = process_gig_input_csv('gigs_2014.csv')
-# gigs_dictionary = gigs_object.return_gigs_dictionary()
-# populate_gig_data(gigs_dictionary)
-#
-# gigs_object = process_gig_input_csv('gigs_2016.csv')
-# gigs_dictionary = gigs_object.return_gigs_dictionary()
-# populate_gig_data(gigs_dictionary)
-
-gigs_object = process_gig_input_csv('gigs_2019.csv')
+gigs_object = process_gig_input_csv('legacy-data/gigs_2018.csv')
 gigs_dictionary = gigs_object.return_gigs_dictionary()
 populate_gig_data(gigs_dictionary)
+
+gigs_object = process_gig_input_csv('legacy-data/gigs_2014.csv')
+gigs_dictionary = gigs_object.return_gigs_dictionary()
+populate_gig_data(gigs_dictionary)
+
+gigs_object = process_gig_input_csv('legacy-data/gigs_2016.csv')
+gigs_dictionary = gigs_object.return_gigs_dictionary()
+populate_gig_data(gigs_dictionary)
+
+# gigs_object = process_gig_input_csv('gigs_2019.csv')
+# gigs_dictionary = gigs_object.return_gigs_dictionary()
+# populate_gig_data(gigs_dictionary)
 
 # print_gigs_dictionary()
 

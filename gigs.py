@@ -50,13 +50,16 @@ class Gigs:
                     else:
                         new_key = headers[index]
                         
-                    # Handle empty trip_origin here
+                    # Handle empty trip_origin here and/or missing comment here
                     if new_key == 'trip_origin':
                         if not gig_event[index]:
                             self.gigs_dict[gig_index][new_key] = '2517 commonwealth'
                         else:
                             self.gigs_dict[gig_index][new_key] = gig_event[index]
                         # print('trip origin value after processing: {}'.format(self.gigs_dict[gig_event[2]][new_key]))
+                    elif new_key == 'comment':
+                        # Always set the comment key, even if empty
+                        self.gigs_dict[gig_index][new_key] = gig_event[index] if gig_event[index] else None
                     elif new_key == 'date':
                         self.gigs_dict[gig_index][new_key] = gig_date
                     # Not using the included mileage data from older gigs.csv files, so just pass this by.
