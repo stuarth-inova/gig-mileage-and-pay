@@ -21,6 +21,38 @@ Hit the local webserver at
 
 pycharm setup for the repo
 
+## Running Tests
+
+Tests use an isolated in-memory SQLite database -- they never touch your `test.db` production data. No need to start the Flask server first; the test suite handles everything automatically (including spinning up a live server for the browser tests).
+
+### Prerequisites (one time)
+
+```bash
+pipenv install --dev
+pipenv run playwright install chromium
+```
+
+### Run all tests
+
+```bash
+pipenv run pytest tests/ -v
+```
+
+### Run specific test files
+
+```bash
+pipenv run pytest tests/test_routes.py -v         # route response tests
+pipenv run pytest tests/test_forms.py -v           # form submission tests
+pipenv run pytest tests/test_calculations.py -v    # mileage/pay calculation tests
+pipenv run pytest tests/test_e2e.py -v             # Playwright browser tests
+```
+
+### Run a single test
+
+```bash
+pipenv run pytest tests/test_calculations.py::test_annual_summary_2014 -v
+```
+
 ## To Do
 * Allow users to selectively update gig mileage values for venues
 * Edit gig details
