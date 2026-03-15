@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
-from flask import Flask, escape, url_for, render_template, request, redirect
+from flask import Flask, url_for, render_template, request, redirect
+from markupsafe import escape
 import calc_miles_and_pay
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc
@@ -9,7 +10,7 @@ from datetime import date
 import re
 
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/stuartholme/gig-mileage-and-pay/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/stuartholme/projects/gig-mileage-and-pay/test.db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
