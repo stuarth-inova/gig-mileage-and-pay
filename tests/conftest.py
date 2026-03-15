@@ -8,18 +8,37 @@ sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
 from app import app as flask_app, db, Gig, Venue
 
+ORIGINAL_DB_URI = flask_app.config['SQLALCHEMY_DATABASE_URI']
+
+
+def _switch_to_test_db():
+    """Point SQLAlchemy at an in-memory database and dispose the old engine."""
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+    flask_app.config['TESTING'] = True
+    if db.engine:
+        db.engine.dispose()
+
+
+def _restore_production_db():
+    """Restore the original database URI so flask run is unaffected."""
+    db.session.remove()
+    if db.engine:
+        db.engine.dispose()
+    flask_app.config['SQLALCHEMY_DATABASE_URI'] = ORIGINAL_DB_URI
+    flask_app.config['TESTING'] = False
+
 
 @pytest.fixture
 def app():
-    flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    flask_app.config['TESTING'] = True
+    _switch_to_test_db()
 
     with flask_app.app_context():
-        db.drop_all()
         db.create_all()
         yield flask_app
         db.session.remove()
         db.drop_all()
+
+    _restore_production_db()
 
 
 @pytest.fixture
@@ -82,11 +101,9 @@ def seed_data(app):
 def _live_server_url():
     """Start a real Flask server once for all Playwright tests."""
     port = 5199
-    flask_app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
-    flask_app.config['TESTING'] = True
+    _switch_to_test_db()
 
     with flask_app.app_context():
-        db.drop_all()
         db.create_all()
 
         venues = [
@@ -120,6 +137,8 @@ def _live_server_url():
     import time
     time.sleep(0.5)
     yield f'http://127.0.0.1:{port}'
+
+    _restore_production_db()
 
 
 @pytest.fixture
