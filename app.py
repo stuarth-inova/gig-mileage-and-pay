@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 
-from flask import Flask, escape, url_for, render_template, request, redirect
+import os
+from flask import Flask, url_for, render_template, request, redirect
+from markupsafe import escape
 import calc_miles_and_pay
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import asc
@@ -8,8 +10,10 @@ from sqlalchemy import desc
 from datetime import date
 import re
 
+basedir = os.path.abspath(os.path.dirname(__file__))
+
 app = Flask(__name__)
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////Users/stuartholme/gig-mileage-and-pay/test.db'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///' + os.path.join(basedir, 'test.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 db = SQLAlchemy(app)
 
@@ -36,6 +40,9 @@ class Venue(db.Model):
 
     def __repr__(self):
         return '<Venue %r>' % self.venue
+
+
+db.create_all()
 
 
 @app.route('/')
@@ -206,7 +213,9 @@ def add_venue():
         result = request.form
         venue = request.form.get('venue')
         rt_miles_from_commonwealth = request.form.get('rt_miles_from_commonwealth')
+        rt_miles_from_commonwealth = float(rt_miles_from_commonwealth) if rt_miles_from_commonwealth else None
         rt_miles_from_dry_bridge = request.form.get('rt_miles_from_dry_bridge')
+        rt_miles_from_dry_bridge = float(rt_miles_from_dry_bridge) if rt_miles_from_dry_bridge else None
         city = request.form.get('city')
 
         print('ADD venue operation')

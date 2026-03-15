@@ -1,107 +1,274 @@
 #!/usr/bin/env python
 
-from app import db
-from app import Gig
-from app import Venue
-from sqlalchemy import asc
-from calc_miles_and_pay import process_gig_input_csv
+import argparse
+import csv
+import os
+from datetime import date, datetime
+
+from app import db, Gig, Venue
 from calc_miles_and_pay import process_distances_input_csv
-from datetime import date
+
+BASEDIR = os.path.abspath(os.path.dirname(__file__))
+
+QUOTE_REPLACEMENTS = {
+    '\u2019': "'",  # right single quotation mark
+    '\u2018': "'",  # left single quotation mark
+    '\u201c': '"',  # left double quotation mark
+    '\u201d': '"',  # right double quotation mark
+}
+
+
+def normalize_quotes(text):
+    for fancy, plain in QUOTE_REPLACEMENTS.items():
+        text = text.replace(fancy, plain)
+    return text
+
 
 db.create_all()
 
 
+def gig_exists(gig_date, venue, band):
+    return Gig.query.filter_by(gig_date=gig_date, venue=venue, band=band).first() is not None
+
+
+def venue_exists(venue_name):
+    return Venue.query.filter_by(venue=venue_name).first() is not None
+
+
 def populate_venue_distance_data(venue_dict):
+    added = 0
+    skipped = 0
     for venue in venue_dict:
-        try:
-            rt_commonwealth_corrected = float(venue_dict[venue]['round_trip_commonwealth'])
-        except ValueError as ve:
-            rt_commonwealth_corrected = None
-        except TypeError as te:
-            rt_commonwealth_corrected = None
+        if venue_exists(venue):
+            skipped += 1
+            continue
 
         try:
-            rt_dry_bridge_corrected = float(venue_dict[venue]['round_trip_dry_br'])
-        except ValueError as ve:
-            rt_dry_bridge_corrected = None
-        except TypeError as te:
-            rt_dry_bridge_corrected = None
+            rt_commonwealth = float(venue_dict[venue]['round_trip_commonwealth'])
+        except (ValueError, TypeError):
+            rt_commonwealth = None
 
-        add_venue = Venue(venue=venue, rt_miles_from_commonwealth=rt_commonwealth_corrected,
-                          rt_miles_from_dry_bridge=rt_dry_bridge_corrected,
+        try:
+            rt_dry_bridge = float(venue_dict[venue]['round_trip_dry_br'])
+        except (ValueError, TypeError):
+            rt_dry_bridge = None
+
+        new_venue = Venue(venue=venue, rt_miles_from_commonwealth=rt_commonwealth,
+                          rt_miles_from_dry_bridge=rt_dry_bridge,
                           city=venue_dict[venue]['city'])
-
-        db.session.add(add_venue)
+        db.session.add(new_venue)
         db.session.commit()
+        added += 1
+
+    print('Venues: {} added, {} skipped (already exist)'.format(added, skipped))
 
 
-def populate_trial_fake_gig_data():
-    gig1 = Gig(gig_date=date(2019, 1, 17), venue='Millers', pay=50, band='Cows')
-    gig2 = Gig(gig_date=date(2019, 1, 25), venue='Ix', pay=80.50, band='Mama Tried')
+def populate_gig_data_from_giglog(csv_path, year):
+    """Import gigs from GigLog_excel CSV files that have placeholder dates (MM/DD/YY).
 
-    db.session.add(gig1)
-    db.session.add(gig2)
-    db.session.commit()
+    Expected columns: Band, Venue, Date, Pay, R/T Miles
+    Uses day=1 for all dates since original day data is lost.
+    Sets trip_origin to '2517 commonwealth' (all pre-move gigs).
+    """
+    with open(csv_path, 'r') as f:
+        reader = csv.DictReader(f)
+        added = 0
+        skipped = 0
+        for row in reader:
+            band = row.get('Band', '').strip()
+            if not band:
+                continue
 
-
-def print_gigs_dictionary():
-    for gig in gigs_dictionary:
-        print('{} - type: {}'.format(gig, type(gig)))
-        print('{}'.format(gigs_dictionary[gig]))
-
-
-def populate_gig_data(gigs_dict):
-    for gig in gigs_dict:
-        try:
-            add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
-                          pay=gigs_dict[gig]['pay'], trip_origin=gigs_dict[gig]['trip_origin'],
-                          comment=gigs_dict[gig]['comment'])
-        except KeyError as ke:
-            print('')
-            print('First try Key error: {}'.format(ke))
-            print('Arg 0: {}'.format(ke.args[0]))
-            print('')
+            venue = normalize_quotes(row.get('Venue', '')).strip().lower()
+            pay_str = row.get('Pay', '0').strip().lstrip('$').replace(',', '')
             try:
-                add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
-                              pay=gigs_dict[gig]['pay'], trip_origin='2517 Commonwealth',
-                              comment=gigs_dict[gig]['comment'])
-            except KeyError as ke2:
-                print('')
-                print('2nd try Key error: {}'.format(ke2))
-                print('Arg 0: {}'.format(ke2.args[0]))
-                print('')
-                add_gig = Gig(gig_date=gigs_dict[gig]['date'], band=gigs_dict[gig]['band'], venue=gigs_dict[gig]['venue'],
-                              pay=gigs_dict[gig]['pay'], trip_origin='2517 Commonwealth',
-                              comment=None)
+                pay = float(pay_str) if pay_str else 0.0
+            except ValueError:
+                pay = 0.0
 
-        db.session.add(add_gig)
-        db.session.commit()
+            date_str = row.get('Date', '').strip()
+            try:
+                month = int(date_str.split('/')[0])
+            except (ValueError, IndexError):
+                continue
+            gig_date = date(year, month, 1)
+
+            if gig_exists(gig_date, venue, band):
+                skipped += 1
+                continue
+
+            new_gig = Gig(
+                gig_date=gig_date,
+                band=band,
+                venue=venue,
+                pay=pay,
+                trip_origin='2517 commonwealth',
+                comment=None,
+            )
+            db.session.add(new_gig)
+            db.session.commit()
+            added += 1
+        print('{}: {} gigs added, {} skipped (duplicates)'.format(csv_path, added, skipped))
 
 
-# distances = process_distances_input_csv('distances.csv')
-# distances_dict = distances.return_venue_dictionary()
-#
-# populate_venue_distance_data(distances_dict)
+def populate_gig_data_2025(csv_path):
+    """Import gigs from the 2025-format CSV with real dates and trip_origin.
 
-# distances.print_out_mileage_list()
-# populate_trial_fake_gig_data()
+    Expected columns: Band, Venue, Date, Pay, R/T miles, trip_origin, comment
+    First row of file is a title row (not headers) -- headers are on the second row.
+    Date format: "Mon DD, YYYY" (e.g. "Jan 23, 2025")
+    """
+    with open(csv_path, 'r') as f:
+        next(f)  # skip title row ("gigs_2025")
+        reader = csv.DictReader(f)
+        added = 0
+        skipped = 0
+        for row in reader:
+            band = row.get('Band', '').strip()
+            if not band:
+                continue
 
-# gigs_object = process_gig_input_csv('gigs_2018.csv')
-# gigs_dictionary = gigs_object.return_gigs_dictionary()
-# populate_gig_data(gigs_dictionary)
-#
-# gigs_object = process_gig_input_csv('gigs_2014.csv')
-# gigs_dictionary = gigs_object.return_gigs_dictionary()
-# populate_gig_data(gigs_dictionary)
-#
-# gigs_object = process_gig_input_csv('gigs_2016.csv')
-# gigs_dictionary = gigs_object.return_gigs_dictionary()
-# populate_gig_data(gigs_dictionary)
+            venue = normalize_quotes(row.get('Venue', '')).strip().lower()
+            pay_str = row.get('Pay', '0').strip().lstrip('$').replace(',', '')
+            try:
+                pay = float(pay_str) if pay_str else 0.0
+            except ValueError:
+                pay = 0.0
 
-gigs_object = process_gig_input_csv('gigs_2019.csv')
-gigs_dictionary = gigs_object.return_gigs_dictionary()
-populate_gig_data(gigs_dictionary)
+            date_str = row.get('Date', '').strip()
+            try:
+                gig_date = datetime.strptime(date_str, '%b %d, %Y').date()
+            except ValueError:
+                print('  Skipping row with unparseable date: "{}"'.format(date_str))
+                continue
 
-# print_gigs_dictionary()
+            trip_origin = row.get('trip_origin', '').strip().lower()
+            if not trip_origin:
+                trip_origin = '741 dry bridge'
 
-# gigs_object.print_out_gig_by_gig()
+            comment = normalize_quotes(row.get('comment', '')).strip() or None
+
+            if gig_exists(gig_date, venue, band):
+                skipped += 1
+                continue
+
+            new_gig = Gig(
+                gig_date=gig_date,
+                band=band,
+                venue=venue,
+                pay=pay,
+                trip_origin=trip_origin,
+                comment=comment,
+            )
+            db.session.add(new_gig)
+            db.session.commit()
+            added += 1
+        print('{}: {} gigs added, {} skipped (duplicates)'.format(csv_path, added, skipped))
+
+
+def populate_gig_data_2014(csv_path):
+    """Import gigs from the 2014-format CSV with real MM/DD/YY dates.
+
+    Expected columns: Band, Venue, Date, Pay, R_T_Miles, [comment]
+    The trailing comma in the header creates an empty 6th column which
+    occasionally contains a comment.
+    """
+    with open(csv_path, 'r') as f:
+        reader = csv.reader(f)
+        headers = next(reader)
+        added = 0
+        skipped = 0
+        for row in reader:
+            if len(row) < 5:
+                continue
+            band = normalize_quotes(row[0]).strip()
+            if not band:
+                continue
+
+            venue = normalize_quotes(row[1]).strip().lower()
+
+            date_str = row[2].strip()
+            try:
+                gig_date = datetime.strptime(date_str, '%m/%d/%y').date()
+            except ValueError:
+                print('  Skipping row with unparseable date: "{}"'.format(date_str))
+                continue
+
+            pay_str = row[3].strip().lstrip('$').replace(',', '')
+            try:
+                pay = float(pay_str) if pay_str else 0.0
+            except ValueError:
+                pay = 0.0
+
+            comment = None
+            if len(row) > 5 and row[5].strip():
+                comment = normalize_quotes(row[5]).strip()
+
+            if gig_exists(gig_date, venue, band):
+                skipped += 1
+                continue
+
+            new_gig = Gig(
+                gig_date=gig_date,
+                band=band,
+                venue=venue,
+                pay=pay,
+                trip_origin='2517 commonwealth',
+                comment=comment,
+            )
+            db.session.add(new_gig)
+            db.session.commit()
+            added += 1
+        print('{}: {} gigs added, {} skipped (duplicates)'.format(csv_path, added, skipped))
+
+
+def load_all_data():
+    """Load all venue and gig data from CSV sources."""
+
+    # Venue/distance data
+    distances_csv = os.path.join(BASEDIR, 'gig-mileage-data-distances.csv')
+    print('Loading venue distances from {}'.format(distances_csv))
+    distances = process_distances_input_csv(distances_csv)
+    populate_venue_distance_data(distances.return_venue_dictionary())
+
+    # 2012 gig data (placeholder dates)
+    gig_2012_csv = os.path.join(BASEDIR, 'GigLog_excel', '2012-Table 1.csv')
+    print('Loading 2012 gig data...')
+    populate_gig_data_from_giglog(gig_2012_csv, 2012)
+
+    # 2014 gig data (real MM/DD/YY dates)
+    gig_2014_csv = os.path.join(BASEDIR, 'GigLog_excel', 'gigs_2014.csv')
+    print('Loading 2014 gig data...')
+    populate_gig_data_2014(gig_2014_csv)
+
+    # 2025 gig data (real dates)
+    gig_2025_csv = os.path.join(BASEDIR, 'GigLog_excel', 'gigs_2025.csv')
+    print('Loading 2025 gig data...')
+    populate_gig_data_2025(gig_2025_csv)
+
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Load gig and venue data into the database.')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('--fresh', action='store_true',
+                       help='Delete existing database and reimport everything from scratch')
+    group.add_argument('--append', action='store_true',
+                       help='Add new data only, skip duplicates')
+    args = parser.parse_args()
+
+    if not args.fresh and not args.append:
+        print('Usage: python db_loading_tool.py [--fresh | --append]')
+        print('  --fresh   Delete test.db and reimport all data from scratch')
+        print('  --append  Import data, skipping any duplicates')
+        raise SystemExit(1)
+
+    if args.fresh:
+        db_path = os.path.join(BASEDIR, 'test.db')
+        if os.path.exists(db_path):
+            os.remove(db_path)
+            print('Deleted existing database: {}'.format(db_path))
+        db.create_all()
+        print('Created fresh database schema')
+
+    load_all_data()
+    print('\nDone.')
